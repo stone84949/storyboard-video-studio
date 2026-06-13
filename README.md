@@ -61,3 +61,6 @@ The asset board should track:
 - approval status
 - credit or caption text
 - replacement notes
+
+Before the first real test run, complete the plugin and skill preflight in
+[docs/first-test-preflight.md](docs/first-test-preflight.md).
