@@ -31,6 +31,14 @@ python C:\Users\jston\.codex\skills\.system\skill-installer\scripts\install-skil
 
 Restart Codex after installing new skills or plugins so they load cleanly.
 
+## Open Design Check
+
+Open Design should be checked before the first pilot because it already exposes
+video, design-system, image, and talking-head style skills that may shape the
+first template choice.
+
+See [open-design-integration.md](open-design-integration.md).
+
 ## Reason
 
 Do not judge the first test run until the supporting tools are installed. The

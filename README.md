@@ -64,3 +64,7 @@ The asset board should track:
 
 Before the first real test run, complete the plugin and skill preflight in
 [docs/first-test-preflight.md](docs/first-test-preflight.md).
+
+Open Design is also available locally and should be used as a design/style
+source before choosing the first template lane. See
+[docs/open-design-integration.md](docs/open-design-integration.md).
