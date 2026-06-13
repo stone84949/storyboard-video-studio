@@ -68,3 +68,6 @@ Before the first real test run, complete the plugin and skill preflight in
 Open Design is also available locally and should be used as a design/style
 source before choosing the first template lane. See
 [docs/open-design-integration.md](docs/open-design-integration.md).
+
+Use Open Design's built-in video templates as the first style discovery surface.
+See [docs/template-discovery-plan.md](docs/template-discovery-plan.md).

@@ -39,6 +39,9 @@ first template choice.
 
 See [open-design-integration.md](open-design-integration.md).
 
+Also complete the template browsing pass in
+[template-discovery-plan.md](template-discovery-plan.md).
+
 ## Reason
 
 Do not judge the first test run until the supporting tools are installed. The
