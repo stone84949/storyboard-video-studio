@@ -71,3 +71,8 @@ source before choosing the first template lane. See
 
 Use Open Design's built-in video templates as the first style discovery surface.
 See [docs/template-discovery-plan.md](docs/template-discovery-plan.md).
+
+For sourced-image videos, use a dedicated Asset Researcher role before assembly.
+See [docs/asset-researcher-agent.md](docs/asset-researcher-agent.md) and
+[docs/agent-workflow.md](docs/agent-workflow.md). Ready-to-use prompts are in
+[docs/asset-researcher-runbook.md](docs/asset-researcher-runbook.md).
