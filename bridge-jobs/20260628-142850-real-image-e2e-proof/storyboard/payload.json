@@ -1,0 +1,46 @@
+{
+  "project_title": "Real Image End To End Proof",
+  "pipeline_target": "short-shorts",
+  "aspect_ratio": "9:16",
+  "scenes": [
+    {
+      "id": "scene-001",
+      "title": "A forgotten archive opens",
+      "asset": "https://picsum.photos/seed/forgotten-archive-door/1080/1920",
+      "asset_state": "approved",
+      "duration": 2.2,
+      "motion": "slow push in",
+      "transition": "fade",
+      "caption_mode": "center-title",
+      "narration": "A forgotten archive opens after decades in the dark.",
+      "notes": "Dark archive door, mystery tone.",
+      "vo_seconds": 2.2
+    },
+    {
+      "id": "scene-002",
+      "title": "The evidence board lights up",
+      "asset": "https://picsum.photos/seed/evidence-board-lights/1080/1920",
+      "asset_state": "approved",
+      "duration": 2.4,
+      "motion": "slow pan right",
+      "transition": "fade",
+      "caption_mode": "lower-third",
+      "narration": "One clue on the board connects the story to a hidden experiment.",
+      "notes": "Evidence board, documents, investigative feel.",
+      "vo_seconds": 2.4
+    },
+    {
+      "id": "scene-003",
+      "title": "The unanswered question remains",
+      "asset": "https://picsum.photos/seed/unanswered-question/1080/1920",
+      "asset_state": "approved",
+      "duration": 2.4,
+      "motion": "slow drift",
+      "transition": "slide",
+      "caption_mode": "center-title",
+      "narration": "And at the end, one question refuses to disappear.",
+      "notes": "Moody final question frame.",
+      "vo_seconds": 2.4
+    }
+  ]
+}

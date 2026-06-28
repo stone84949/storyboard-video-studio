@@ -1,0 +1,123 @@
+{
+  "job_id": "20260628-142850-real-image-e2e-proof",
+  "created_at": "2026-06-28T18:28:50.094792+00:00",
+  "machine": "BEAST",
+  "engine": "hyperframes",
+  "run_label": "real-image-e2e-proof",
+  "execute_requested": true,
+  "live_execution_enabled": true,
+  "pipeline_target": "short-shorts",
+  "aspect_ratio": "9:16",
+  "project_title": "Real Image End To End Proof",
+  "payload": {
+    "project_title": "Real Image End To End Proof",
+    "pipeline_target": "short-shorts",
+    "aspect_ratio": "9:16",
+    "scenes": [
+      {
+        "id": "scene-001",
+        "title": "A forgotten archive opens",
+        "asset": "assets\\images\\materialized\\001-scene-001.jpg",
+        "asset_state": "materialized",
+        "duration": 2.2,
+        "motion": "slow push in",
+        "transition": "fade",
+        "caption_mode": "center-title",
+        "narration": "A forgotten archive opens after decades in the dark.",
+        "notes": "Dark archive door, mystery tone.",
+        "vo_seconds": 2.2,
+        "assetUrl": "assets\\images\\materialized\\001-scene-001.jpg",
+        "asset_url": "assets\\images\\materialized\\001-scene-001.jpg",
+        "assetState": "materialized"
+      },
+      {
+        "id": "scene-002",
+        "title": "The evidence board lights up",
+        "asset": "assets\\images\\materialized\\002-scene-002.jpg",
+        "asset_state": "materialized",
+        "duration": 2.4,
+        "motion": "slow pan right",
+        "transition": "fade",
+        "caption_mode": "lower-third",
+        "narration": "One clue on the board connects the story to a hidden experiment.",
+        "notes": "Evidence board, documents, investigative feel.",
+        "vo_seconds": 2.4,
+        "assetUrl": "assets\\images\\materialized\\002-scene-002.jpg",
+        "asset_url": "assets\\images\\materialized\\002-scene-002.jpg",
+        "assetState": "materialized"
+      },
+      {
+        "id": "scene-003",
+        "title": "The unanswered question remains",
+        "asset": "assets\\images\\materialized\\003-scene-003.jpg",
+        "asset_state": "materialized",
+        "duration": 2.4,
+        "motion": "slow drift",
+        "transition": "slide",
+        "caption_mode": "center-title",
+        "narration": "And at the end, one question refuses to disappear.",
+        "notes": "Moody final question frame.",
+        "vo_seconds": 2.4,
+        "assetUrl": "assets\\images\\materialized\\003-scene-003.jpg",
+        "asset_url": "assets\\images\\materialized\\003-scene-003.jpg",
+        "assetState": "materialized"
+      }
+    ]
+  },
+  "source_payload": {
+    "project_title": "Real Image End To End Proof",
+    "pipeline_target": "short-shorts",
+    "aspect_ratio": "9:16",
+    "scenes": [
+      {
+        "id": "scene-001",
+        "title": "A forgotten archive opens",
+        "asset": "https://picsum.photos/seed/forgotten-archive-door/1080/1920",
+        "asset_state": "approved",
+        "duration": 2.2,
+        "motion": "slow push in",
+        "transition": "fade",
+        "caption_mode": "center-title",
+        "narration": "A forgotten archive opens after decades in the dark.",
+        "notes": "Dark archive door, mystery tone."
+      },
+      {
+        "id": "scene-002",
+        "title": "The evidence board lights up",
+        "asset": "https://picsum.photos/seed/evidence-board-lights/1080/1920",
+        "asset_state": "approved",
+        "duration": 2.4,
+        "motion": "slow pan right",
+        "transition": "fade",
+        "caption_mode": "lower-third",
+        "narration": "One clue on the board connects the story to a hidden experiment.",
+        "notes": "Evidence board, documents, investigative feel."
+      },
+      {
+        "id": "scene-003",
+        "title": "The unanswered question remains",
+        "asset": "https://picsum.photos/seed/unanswered-question/1080/1920",
+        "asset_state": "approved",
+        "duration": 2.4,
+        "motion": "slow drift",
+        "transition": "slide",
+        "caption_mode": "center-title",
+        "narration": "And at the end, one question refuses to disappear.",
+        "notes": "Moody final question frame."
+      }
+    ]
+  },
+  "folders": {
+    "storyboard": "storyboard/",
+    "scenes": "scenes/",
+    "exports": "exports/",
+    "editor_handoff": "editor-handoff/",
+    "logs": "logs/"
+  },
+  "asset_materialization": {
+    "provider_requested": "auto",
+    "provider_used": "local",
+    "fallback_enabled": true,
+    "manifest": "exports/asset-manifest.json"
+  }
+}

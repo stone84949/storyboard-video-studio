@@ -46,6 +46,13 @@ Current state: storyboard-to-render workflow is integrated for safe dry-runs, as
   - Asset manifest: `bridge-jobs/20260628-074528-generated-assets-hyperframes-proof/exports/asset-manifest.json`
   - Output: `bridge-jobs/20260628-074528-generated-assets-hyperframes-proof/exports/final.mp4`
   - Verified with `ffprobe`: H.264, 1080x1920, 30fps, 6.0s.
+- Real-image end-to-end bridge proof:
+  - Bridge executed with `STORYBOARD_BRIDGE_LIVE=1` and `execute: true`.
+  - Job: `bridge-jobs/20260628-142850-real-image-e2e-proof/`
+  - Asset materializer downloaded three remote JPEG scene images into `assets/images/materialized/` and copied them into the generated HyperFrames workspace.
+  - Output: `bridge-jobs/20260628-142850-real-image-e2e-proof/exports/final.mp4`
+  - Proof frame: `bridge-jobs/20260628-142850-real-image-e2e-proof/exports/proof-frame-2s.jpg`
+  - Verified with `ffprobe`: H.264, 1080x1920, 30fps, 7.0s, 3,539,333 bytes.
 - End-to-end OpenMontage handoff smoke:
   - `POST /api/launch` with `pipeline_target: montage` and `execute: true` returned `status: executed`.
   - Job output: `bridge-jobs/20260628-063336-montage-dry-run/exports/openmontage-handoff.json`
@@ -89,7 +96,7 @@ Without that flag, `execute: true` still writes the job folder but returns `stat
 
 ## Known limitations
 
-- Current live HyperFrames renderer is still a first-pass finish layer, but it now runs after asset materialization instead of relying on empty placeholders.
+- Current live HyperFrames renderer can create a real visual MP4 from downloaded or generated scene images, but it does not yet mux narration, voiceover, music, or SFX into the final file.
 - Cloud/AI image generation through OpenMontage providers is wired by provider name, but not proven in this shell because OpenAI, Google/Gemini, xAI/Grok, FAL, Pexels, Pixabay, and Unsplash keys are not visible in the environment. OpenMontage registry discovery also needs its Python dependencies installed for full selector use.
 - OpenMontage path currently proves a validated handoff/working-copy package, not a full OpenMontage-rendered MP4.
 - UI is a static local control layer, not yet mounted into Mission Control.

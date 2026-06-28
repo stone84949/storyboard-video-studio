@@ -12,3 +12,4 @@
 - 2026-06-28 07:45 EDT — Added `materialize_assets.py`, wired HyperFrames bridge commands through it, and rendered `bridge-jobs/20260628-074528-generated-assets-hyperframes-proof/exports/final.mp4` from generated local scene art.
 - 2026-06-28 12:35 EDT — Audited duplicate storyboard workflow copies across repo, vault, and Downloads; recorded canonical app/source rules in `SOURCE_OF_TRUTH.md`.
 - 2026-06-28 12:52 EDT — Added JSON import/apply plus asset library assignment to the current storyboard app, then moved duplicate workflow snapshots into `archive/storyboard-snapshots/2026-06-28/`.
+- 2026-06-28 14:35 EDT — Ran live end-to-end bridge execution with three remote image URLs; downloaded all images, rendered `bridge-jobs/20260628-142850-real-image-e2e-proof/exports/final.mp4`, and verified H.264 1080x1920 30fps video output plus proof frame.

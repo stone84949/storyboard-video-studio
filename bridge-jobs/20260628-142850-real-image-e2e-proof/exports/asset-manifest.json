@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "project": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-142850-real-image-e2e-proof\\project.json",
+  "provider_requested": "auto",
+  "provider_used": "local",
+  "fallback_enabled": true,
+  "assets": [
+    {
+      "scene_id": "scene-001",
+      "title": "A forgotten archive opens",
+      "prompt": "A forgotten archive opens. Dark archive door, mystery tone.. A forgotten archive opens after decades in the dark.. cinematic weird forgotten history, rich archival mood. vertical 9:16 cinematic frame, documentary explainer still, no legible text, strong subject separation",
+      "provider": "local",
+      "source_asset": "https://picsum.photos/seed/forgotten-archive-door/1080/1920",
+      "status": "downloaded",
+      "asset": "assets\\images\\materialized\\001-scene-001.jpg",
+      "notes": ""
+    },
+    {
+      "scene_id": "scene-002",
+      "title": "The evidence board lights up",
+      "prompt": "The evidence board lights up. Evidence board, documents, investigative feel.. One clue on the board connects the story to a hidden experiment.. cinematic weird forgotten history, rich archival mood. vertical 9:16 cinematic frame, documentary explainer still, no legible text, strong subject separation",
+      "provider": "local",
+      "source_asset": "https://picsum.photos/seed/evidence-board-lights/1080/1920",
+      "status": "downloaded",
+      "asset": "assets\\images\\materialized\\002-scene-002.jpg",
+      "notes": ""
+    },
+    {
+      "scene_id": "scene-003",
+      "title": "The unanswered question remains",
+      "prompt": "The unanswered question remains. Moody final question frame.. And at the end, one question refuses to disappear.. cinematic weird forgotten history, rich archival mood. vertical 9:16 cinematic frame, documentary explainer still, no legible text, strong subject separation",
+      "provider": "local",
+      "source_asset": "https://picsum.photos/seed/unanswered-question/1080/1920",
+      "status": "downloaded",
+      "asset": "assets\\images\\materialized\\003-scene-003.jpg",
+      "notes": ""
+    }
+  ]
+}

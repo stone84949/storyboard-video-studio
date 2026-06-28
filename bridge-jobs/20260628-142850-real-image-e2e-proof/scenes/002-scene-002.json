@@ -1,0 +1,14 @@
+{
+  "index": 2,
+  "id": "scene-002",
+  "title": "The evidence board lights up",
+  "asset": "https://picsum.photos/seed/evidence-board-lights/1080/1920",
+  "asset_state": "approved",
+  "duration": 2.4,
+  "motion": "slow pan right",
+  "transition": "fade",
+  "caption_mode": "lower-third",
+  "narration": "One clue on the board connects the story to a hidden experiment.",
+  "notes": "Evidence board, documents, investigative feel.",
+  "vo_seconds": 2.4
+}

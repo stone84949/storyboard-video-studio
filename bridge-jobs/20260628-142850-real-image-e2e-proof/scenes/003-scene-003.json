@@ -1,0 +1,14 @@
+{
+  "index": 3,
+  "id": "scene-003",
+  "title": "The unanswered question remains",
+  "asset": "https://picsum.photos/seed/unanswered-question/1080/1920",
+  "asset_state": "approved",
+  "duration": 2.4,
+  "motion": "slow drift",
+  "transition": "slide",
+  "caption_mode": "center-title",
+  "narration": "And at the end, one question refuses to disappear.",
+  "notes": "Moody final question frame.",
+  "vo_seconds": 2.4
+}

@@ -41,6 +41,9 @@ Run date: 2026-06-28 on BEAST repo path `C:\Workspace\Repos\storyboard-video-stu
 | Browser import/apply + asset assignment | Chrome DevTools on `http://127.0.0.1:8128/?refresh=20260628-1255`; added an asset, assigned it, edited payload JSON, and applied it | PASS; selected scene asset changed and imported payload reduced scene list to one edited scene |
 | Asset materialization proof | `python scripts/materialize_assets.py bridge-jobs/20260628-074528-generated-assets-hyperframes-proof/project.json --provider auto` | PASS; wrote 3 generated local SVG assets and `exports/asset-manifest.json` |
 | Generated-asset HyperFrames render | `python scripts/render_hyperframes_job.py bridge-jobs/20260628-074528-generated-assets-hyperframes-proof/project.json --target short-shorts --quality draft` | PASS; wrote `exports/final.mp4` using materialized scene assets |
+| Real remote-image bridge render | Bridge execution with `STORYBOARD_BRIDGE_LIVE=1`, `execute: true`, and three `https://picsum.photos/...` scene assets | PASS; downloaded all 3 JPEGs and wrote a real visual MP4 |
+| Real remote-image MP4 inspection | `ffprobe -v error -show_entries format=duration,size,format_name:stream=index,codec_type,codec_name,width,height,r_frame_rate,duration -of json bridge-jobs\20260628-142850-real-image-e2e-proof\exports\final.mp4` | PASS; H.264, 1080x1920, 30fps, 7.0s, 3,539,333 bytes |
+| Real remote-image proof frame | `ffmpeg -y -ss 00:00:02 -i bridge-jobs\20260628-142850-real-image-e2e-proof\exports\final.mp4 -frames:v 1 bridge-jobs\20260628-142850-real-image-e2e-proof\exports\proof-frame-2s.jpg` | PASS; frame shows downloaded scene image with rendered storyboard text |
 | OpenMontage handoff unit | `python -m unittest tests.test_montage_handoff -v` | PASS |
 | End-to-end OpenMontage handoff | `POST /api/launch` with montage payload and `execute: true` | PASS; returned `status: executed` and wrote bridge + OpenMontage handoff files |
 | UI HTTP sanity | `Invoke-WebRequest http://127.0.0.1:8128/` | PASS, 200 OK |
@@ -82,6 +85,7 @@ Result: PASS for all three; each printed a valid preview table with 1080x1920 ve
 - `bridge-jobs/20260628-054612-codex-ui-smoke/exports/final.mp4`: H.264, 1080x1920, 30fps, 6.4s.
 - `bridge-jobs/20260628-060834-codex-live-render-smoke/exports/final.mp4`: H.264, 1080x1920, 30fps, 2.0s.
 - `bridge-jobs/20260628-074528-generated-assets-hyperframes-proof/exports/final.mp4`: H.264, 1080x1920, 30fps, 6.0s; scenes use materialized generated SVG assets.
+- `bridge-jobs/20260628-142850-real-image-e2e-proof/exports/final.mp4`: H.264, 1080x1920, 30fps, 7.0s, 3,539,333 bytes; scenes use downloaded remote JPEG assets.
 
 ## Browser QA note
 
@@ -89,4 +93,4 @@ Chrome DevTools reported no JavaScript console errors after refresh. Remaining b
 
 ## Known test limitation
 
-The current no-key proof uses generated local SVG scene art. OpenMontage cloud/image-provider generation is wired but not proven in this shell because the relevant API keys are not visible. OpenMontage is proven as a handoff package, not yet as a fully automated OpenMontage MP4 render.
+The strongest current proof creates a real visual MP4 from downloaded remote images, but the rendered file has no audio stream yet. OpenMontage cloud/image-provider generation is wired but not proven in this shell because the relevant API keys are not visible. OpenMontage is proven as a handoff package, not yet as a fully automated OpenMontage MP4 render.

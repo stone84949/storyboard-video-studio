@@ -1,0 +1,14 @@
+{
+  "index": 1,
+  "id": "scene-001",
+  "title": "A forgotten archive opens",
+  "asset": "https://picsum.photos/seed/forgotten-archive-door/1080/1920",
+  "asset_state": "approved",
+  "duration": 2.2,
+  "motion": "slow push in",
+  "transition": "fade",
+  "caption_mode": "center-title",
+  "narration": "A forgotten archive opens after decades in the dark.",
+  "notes": "Dark archive door, mystery tone.",
+  "vo_seconds": 2.2
+}
