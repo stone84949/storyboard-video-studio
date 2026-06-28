@@ -1,0 +1,10 @@
+{
+  "index": 6,
+  "id": "scene-006",
+  "title": "Close",
+  "narration": "The archive preserved the town after everyone else forgot it.",
+  "duration": 7,
+  "vo_seconds": 3.9,
+  "asset": "archive-box.jpg",
+  "motion": "slow push in"
+}

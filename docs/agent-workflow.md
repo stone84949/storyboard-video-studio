@@ -40,6 +40,9 @@ Use Hermes/CLI for:
 - running repeatable producer/researcher workflows
 - calling Open Design HTTP automation
 - coordinating multiple agents over the same file contract
+- using repo wrappers such as `scripts/hermes-producer-brief.ps1`,
+  `scripts/hermes-asset-research-plan.ps1`, and
+  `scripts/hermes-open-design-template-review.ps1`
 
 Use Open Design for:
 

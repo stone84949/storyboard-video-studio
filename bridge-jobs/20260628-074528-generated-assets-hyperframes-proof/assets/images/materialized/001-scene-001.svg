@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101820"/>
+      <stop offset="1" stop-color="#07090d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="70%" cy="18%" r="65%">
+      <stop offset="0" stop-color="#e2b044" stop-opacity=".55"/>
+      <stop offset=".42" stop-color="#e2b044" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#e2b044" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  <rect width="100%" height="100%" fill="url(#glow)"/>
+  <path d="M0 1402 C 248 1152, 562 1613, 1080 1267 L 1080 1920 L 0 1920 Z" fill="#e2b044" opacity=".16"/>
+  <circle cx="216" cy="461" r="151" fill="none" stroke="#e2b044" stroke-width="10" opacity=".22"/>
+  <circle cx="842" cy="1344" r="238" fill="#e2b044" opacity=".11"/>
+  <rect x="72" y="1160" width="936" height="470" rx="30" fill="#000" opacity=".28"/>
+  <text x="88" y="1238" fill="#e2b044" font-family="Arial, sans-serif" font-size="34" font-weight="800">GENERATED SCENE ART · 01</text>
+  <text x="88" y="1335" fill="#f8f4e8" font-family="Arial, sans-serif" font-size="78" font-weight="900">Forgotten archive door</text>
+  <text x="88" y="1430" fill="#f8f4e8" font-family="Arial, sans-serif" font-size="28" opacity=".82">Forgotten archive door. A sealed archive door waits in the dark.. cinematic weird forgotten history, rich archival mood. vertical </text>
+</svg>

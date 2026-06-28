@@ -1,0 +1,1 @@
+python scripts/prepare_montage_handoff.py bridge-jobs\20260628-063336-montage-dry-run/project.json

@@ -1,0 +1,11 @@
+{
+  "index": 1,
+  "id": "scene-001",
+  "title": "Forgotten archive door",
+  "asset": "",
+  "asset_state": "needs-image",
+  "duration": 2.0,
+  "motion": "slow push in",
+  "narration": "A sealed archive door waits in the dark.",
+  "vo_seconds": 2.0
+}

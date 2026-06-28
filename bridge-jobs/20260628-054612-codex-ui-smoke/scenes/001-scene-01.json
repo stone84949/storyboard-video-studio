@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "narration": "Opening line",
+  "title": "Hook",
+  "duration": 3.2,
+  "assetUrl": "hook.jpg",
+  "id": "scene-01",
+  "motionPreset": "zoom-in",
+  "asset": "hook.jpg",
+  "motion": "zoom-in",
+  "vo_seconds": 3.2
+}

@@ -1,0 +1,34 @@
+{
+  "project_title": "Generated Assets HyperFrames Proof",
+  "pipeline_target": "short-shorts",
+  "aspect_ratio": "9:16",
+  "scenes": [
+    {
+      "id": "scene-001",
+      "title": "Forgotten archive door",
+      "asset": "",
+      "asset_state": "needs-image",
+      "duration": 2.0,
+      "motion": "slow push in",
+      "narration": "A sealed archive door waits in the dark."
+    },
+    {
+      "id": "scene-002",
+      "title": "Evidence board reveal",
+      "asset": "",
+      "asset_state": "needs-image",
+      "duration": 2.0,
+      "motion": "slow pan right",
+      "narration": "The first clue appears on the evidence board."
+    },
+    {
+      "id": "scene-003",
+      "title": "Final unanswered question",
+      "asset": "",
+      "asset_state": "needs-image",
+      "duration": 2.0,
+      "motion": "slow drift",
+      "narration": "The mystery ends with one unanswered question."
+    }
+  ]
+}

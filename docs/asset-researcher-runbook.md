@@ -133,8 +133,8 @@ codex "You are the Asset Researcher Agent. Follow docs/asset-researcher-runbook.
 
 ## Hermes HTTP/Command Pattern
 
-Use the same prompt body with Hermes or a Hermes command wrapper. The important
-part is that the agent is pointed at:
+Use the same prompt body with Hermes or the repo wrapper at
+`scripts/hermes-asset-research-plan.ps1`. The important part is that the agent is pointed at:
 
 ```text
 C:\Workspace\Repos\storyboard-video-studio
@@ -143,7 +143,19 @@ docs/asset-researcher-runbook.md
 videos/<slug>/storyboard.md
 ```
 
-Suggested Hermes prompt:
+Suggested wrapper command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/hermes-asset-research-plan.ps1 -VideoSlug <slug>
+```
+
+If you want the exact prompt only:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/hermes-asset-research-plan.ps1 -VideoSlug <slug> -PrintPrompt
+```
+
+Equivalent raw Hermes prompt:
 
 ```text
 In C:\Workspace\Repos\storyboard-video-studio, run the Asset Researcher planning-only pass.

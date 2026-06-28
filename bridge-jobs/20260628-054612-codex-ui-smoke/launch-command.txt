@@ -1,0 +1,1 @@
+DRY RUN only for longer-shorts: python scripts/storyboard_to_config.py bridge-jobs\20260628-054612-codex-ui-smoke/project.json --target longer-shorts

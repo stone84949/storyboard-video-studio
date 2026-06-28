@@ -1,0 +1,69 @@
+{
+  "schema_version": "storyboard-video-studio/openmontage-handoff/v1",
+  "created_at": "2026-06-28T10:33:36.750410+00:00",
+  "source_project_json": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-063336-montage-dry-run\\project.json",
+  "openmontage_project_dir": "C:\\Workspace\\Repos\\OpenMontage\\projects\\20260628-063336-montage-dry-run-openmontage-handoff",
+  "job_id": "20260628-063336-montage-dry-run",
+  "project_title": "Montage Dry Run",
+  "aspect_ratio": "9:16",
+  "pipeline_target": "montage",
+  "target_duration_seconds": 42,
+  "project_notes": "",
+  "voiceover_notes": "",
+  "scenes": [
+    {
+      "index": 1,
+      "id": "scene-001",
+      "title": "Image sequence A",
+      "asset": "sequence-a/*.jpg",
+      "duration": 7.0,
+      "vo_seconds": 4.1,
+      "transition": "crossfade",
+      "motion": "crossfade plus slow push in",
+      "caption_mode": "lower-third",
+      "narration": "Start with the exterior, then move into the evidence board.",
+      "notes": "Editor can choose best three stills.",
+      "asset_state": "candidate",
+      "start": 0.0,
+      "end": 7.0
+    },
+    {
+      "index": 2,
+      "id": "scene-002",
+      "title": "Map movement",
+      "asset": "map-route.png",
+      "duration": 8.0,
+      "vo_seconds": 4.4,
+      "transition": "crossfade",
+      "motion": "animated crop from west to east",
+      "caption_mode": "lower-third",
+      "narration": "Trace the route from the main road to the abandoned site.",
+      "notes": "Resolve or Shotcut finishing.",
+      "asset_state": "candidate",
+      "start": 7.0,
+      "end": 15.0
+    },
+    {
+      "index": 3,
+      "id": "scene-003",
+      "title": "Document stack",
+      "asset": "documents/*.jpg",
+      "duration": 9.0,
+      "vo_seconds": 4.5,
+      "transition": "crossfade",
+      "motion": "stacked still montage with dissolves",
+      "caption_mode": "lower-third",
+      "narration": "Layer the clipping, ledger, and handwritten note in sequence.",
+      "notes": "Keep readable at mobile size.",
+      "asset_state": "candidate",
+      "start": 15.0,
+      "end": 24.0
+    }
+  ],
+  "handoff_files": {
+    "editor_handoff_md": "editor-handoff/editor-handoff.md",
+    "shotcut_notes": "editor-handoff/shotcut-notes.txt",
+    "resolve_timeline_csv": "editor-handoff/resolve-timeline.csv",
+    "storyboard_json": "storyboard/storyboard-handoff.json"
+  }
+}

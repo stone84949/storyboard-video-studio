@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Storyboard Video Studio Dashboard</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="kicker">Storyboard Video Studio</p>
+        <h1>Video control board</h1>
+      </div>
+      <div class="status-pill" id="generatedAt">Loading</div>
+    </header>
+
+    <section class="overview" aria-label="Pipeline overview">
+      <div class="metric">
+        <span class="metric-value" id="projectCount">0</span>
+        <span class="metric-label">videos</span>
+      </div>
+      <div class="metric">
+        <span class="metric-value" id="renderedCount">0</span>
+        <span class="metric-label">renders</span>
+      </div>
+      <div class="metric">
+        <span class="metric-value" id="assetReviewCount">0</span>
+        <span class="metric-label">asset reviews</span>
+      </div>
+    </section>
+
+    <section class="pipeline" id="pipeline" aria-label="Stage totals"></section>
+
+    <section class="workbench">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Active work</p>
+          <h2>Projects</h2>
+        </div>
+        <button class="ghost-button" id="refreshButton" type="button">Reload data</button>
+      </div>
+      <div class="project-grid" id="projectGrid"></div>
+    </section>
+  </main>
+
+  <template id="projectCardTemplate">
+    <article class="project-card">
+      <div class="card-head">
+        <div>
+          <p class="slug"></p>
+          <h3></h3>
+        </div>
+        <span class="badge"></span>
+      </div>
+      <div class="stage-row"></div>
+      <div class="next-action"></div>
+      <dl class="details"></dl>
+      <div class="links"></div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

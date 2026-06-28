@@ -11,6 +11,9 @@ videos/*/audio/
 *.log
 __pycache__/
 .pytest_cache/
+dashboard/data/*.json
+dashboard/*.log
+dashboard/*.png
 
 # Local environment
 .env

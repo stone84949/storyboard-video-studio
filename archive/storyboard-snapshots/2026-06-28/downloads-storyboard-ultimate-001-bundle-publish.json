@@ -1,0 +1,224 @@
+{
+  "storyboard": {
+    "id": "storyboard-ultimate-001",
+    "title": "Storyboard Ultimate Workflow",
+    "aspect_ratio": "9:16",
+    "workflow_stage": "publish",
+    "task_id": "task-storyboard-001",
+    "total_duration_sec": 21.2,
+    "project_notes": "Review flagged assets before final render. Keep center safe for captions and leave room for logo or CTA.",
+    "voiceover_notes": "Narration should stay calm, paced, and documentary-style. Leave short breathing room between scenes.",
+    "voice_settings": {
+      "wpm": 132,
+      "buffer": 0.3
+    },
+    "scenes": [
+      {
+        "id": "scene-01",
+        "title": "Cold open visual",
+        "assetUrl": "https://picsum.photos/seed/story-scene1/1080/1920",
+        "duration": 5.5,
+        "start": 0,
+        "transition": "fade",
+        "motionPreset": "zoom-in",
+        "status": "raw",
+        "assetState": "approved",
+        "captionMode": "center-title",
+        "notes": "Fast hook frame with dark center-safe composition.",
+        "narration": "This is where the story opens with a strong visual hook.",
+        "voStart": 0.1,
+        "voEnd": 5.3,
+        "order": 1
+      },
+      {
+        "id": "scene-02",
+        "title": "Problem setup",
+        "assetUrl": "https://picsum.photos/seed/story-scene2/1080/1920",
+        "duration": 5.1,
+        "start": 5.5,
+        "transition": "cut",
+        "motionPreset": "pan-right-left",
+        "status": "ready",
+        "assetState": "needs-image",
+        "captionMode": "lower-third",
+        "notes": "Leave space on right side for captions.",
+        "narration": "Here we frame the problem and introduce the core tension.",
+        "voStart": 5.5,
+        "voEnd": 10.3,
+        "order": 2
+      },
+      {
+        "id": "scene-04",
+        "title": "CTA end frame",
+        "assetUrl": "https://picsum.photos/seed/story-scene4/1080/1920",
+        "duration": 5.1,
+        "start": 10.6,
+        "transition": "slide",
+        "motionPreset": "static",
+        "status": "flagged",
+        "assetState": "replace-later",
+        "captionMode": "center-title",
+        "notes": "End card needs final branded image swap.",
+        "narration": "Finish with the call to action and clear next step.",
+        "voStart": 16.2,
+        "voEnd": 20.9,
+        "order": 3
+      },
+      {
+        "id": "scene-03",
+        "title": "Main proof visual",
+        "assetUrl": "https://picsum.photos/seed/story-scene3/1080/1920",
+        "duration": 5.5,
+        "start": 15.7,
+        "transition": "fade",
+        "motionPreset": "pan-left-right",
+        "status": "approved",
+        "assetState": "approved",
+        "captionMode": "lower-third",
+        "notes": "Use as proof frame with product/service focus.",
+        "narration": "Now we move into the main proof point and visual evidence.",
+        "voStart": 10.7,
+        "voEnd": 15.9,
+        "order": 4
+      }
+    ]
+  },
+  "launcher": {
+    "machine": "beast",
+    "engine": "hyperframes",
+    "run_label": "storyboard-ultimate-001",
+    "execute": false
+  },
+  "mission_control": {
+    "open_task_id": "task-storyboard-001"
+  },
+  "checklist": [
+    {
+      "id": "chk-1",
+      "label": "All scenes have images",
+      "done": true
+    },
+    {
+      "id": "chk-2",
+      "label": "No flagged shots remain",
+      "done": true
+    },
+    {
+      "id": "chk-3",
+      "label": "Caption-safe area checked",
+      "done": true
+    },
+    {
+      "id": "chk-4",
+      "label": "Project notes reviewed",
+      "done": true
+    }
+  ],
+  "validation_results": [
+    {
+      "scene": "scene-02",
+      "status": "warn",
+      "message": "Scene still needs an approved image."
+    },
+    {
+      "scene": "scene-04",
+      "status": "warn",
+      "message": "Scene is flagged and should be reviewed before launch."
+    },
+    {
+      "scene": "scene-04",
+      "status": "warn",
+      "message": "VO extends beyond scene duration."
+    }
+  ],
+  "events": [
+    {
+      "time": "03:58",
+      "text": "Bridge write prepared for storyboard-ultimate-001."
+    },
+    {
+      "time": "04:01",
+      "text": "BEAST reported 1 running job."
+    },
+    {
+      "time": "12:20",
+      "text": "Generated pacing suggestions."
+    },
+    {
+      "time": "12:20",
+      "text": "Auto-filled VO timings from narration."
+    },
+    {
+      "time": "12:20",
+      "text": "Auto-fit scene durations to narration length."
+    },
+    {
+      "time": "12:20",
+      "text": "Ran scene validation."
+    },
+    {
+      "time": "12:20",
+      "text": "Ran scene validation."
+    },
+    {
+      "time": "12:20",
+      "text": "Auto-filled VO timings from narration."
+    },
+    {
+      "time": "12:20",
+      "text": "Auto-fit scene durations to narration length."
+    },
+    {
+      "time": "12:20",
+      "text": "Auto-filled VO timings from narration."
+    },
+    {
+      "time": "12:20",
+      "text": "Ran scene validation."
+    },
+    {
+      "time": "12:20",
+      "text": "Generated pacing suggestions."
+    },
+    {
+      "time": "12:20",
+      "text": "Ran scene validation."
+    },
+    {
+      "time": "12:20",
+      "text": "Auto-filled VO timings from narration."
+    },
+    {
+      "time": "12:20",
+      "text": "Auto-filled VO timings from narration."
+    },
+    {
+      "time": "12:20",
+      "text": "Auto-fit scene durations to narration length."
+    },
+    {
+      "time": "12:20",
+      "text": "Generated pacing suggestions."
+    },
+    {
+      "time": "12:20",
+      "text": "Reordered scene-03 before/around scene-04."
+    },
+    {
+      "time": "12:21",
+      "text": "Ran scene validation."
+    },
+    {
+      "time": "12:21",
+      "text": "Launch blocked by validation."
+    },
+    {
+      "time": "12:21",
+      "text": "Ran scene validation."
+    },
+    {
+      "time": "12:21",
+      "text": "Launch blocked by validation."
+    }
+  ]
+}

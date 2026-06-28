@@ -1,0 +1,14 @@
+{
+  "storyboard_video_studio": "C:\\Workspace\\Repos\\storyboard-video-studio",
+  "openmontage_root": "C:\\Workspace\\Repos\\OpenMontage",
+  "content_factory_root": "G:\\My Drive\\Projects\\Active\\content-factory-render",
+  "content_factory_hyperframes": "G:\\My Drive\\Projects\\Active\\content-factory-render\\hyperframes",
+  "content_factory_out": "G:\\My Drive\\Projects\\Active\\content-factory-render\\out",
+  "notes": {
+    "storyboard_video_studio": "Control repo: visual storyboard UI, bridge jobs, first live HyperFrames finish layer.",
+    "openmontage_root": "OpenMontage repo: richer finish-layer experiments, montage/director workflows, pilot renders.",
+    "content_factory_root": "Existing content factory repo/system.",
+    "content_factory_hyperframes": "Existing content-factory HyperFrames workspace area.",
+    "content_factory_out": "Existing content-factory final outputs; may not include newest OpenMontage or storyboard-video-studio renders."
+  }
+}

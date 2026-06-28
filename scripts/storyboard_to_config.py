@@ -148,30 +148,84 @@ def build_job_config(job_meta: dict, panels: list) -> dict:
     return config
 
 
-def scaffold_job_folder(config: dict, src_csv: Path):
-    """Create job folder structure and write job_config.json + image src folder."""
-    job_id   = config["job_id"]
-    job_dir  = Path(f"videos/{job_id}")
-    img_src  = job_dir / "assets" / "images" / "src"
-    img_proc = job_dir / "assets" / "images" / "processed"
-    out_dir  = job_dir / "out"
-    logs_dir = job_dir / "logs"
+def build_job_config_from_bridge_project(project: dict) -> dict:
+    """Convert bridge project.json into the same render config shape as CSV input."""
+    payload = project.get("payload", project)
+    scenes = payload.get("scenes") or []
+    job_id = project.get("job_id") or payload.get("job_id") or payload.get("project_title") or "storyboard-job"
+    job_id = str(job_id).strip().replace(" ", "-").lower()
+    target = project.get("pipeline_target") or payload.get("pipeline_target") or "short-shorts"
+    target_duration = float(payload.get("target_duration_seconds") or sum(float(s.get("duration", 0) or 0) for s in scenes) or 30)
+    script_lines = [str(scene.get("narration", "")).strip() for scene in scenes if str(scene.get("narration", "")).strip()]
 
-    for d in [img_src, img_proc, out_dir, logs_dir]:
+    images = []
+    for i, scene in enumerate(scenes, start=1):
+        images.append({
+            "panel": i,
+            "filename": str(scene.get("asset") or scene.get("image_filename") or f"scene-{i:03d}.jpg").strip(),
+            "mode": str(scene.get("image_mode") or "fill").lower(),
+            "focal_point": {"x_pct": float(scene.get("focal_x", 0.5) or 0.5), "y_pct": float(scene.get("focal_y", 0.5) or 0.5)},
+            "allow_upscale": bool(scene.get("allow_upscale", False)),
+            "scene_description": str(scene.get("title") or scene.get("scene_description") or "").strip(),
+            "narration": str(scene.get("narration") or "").strip(),
+            "notes": str(scene.get("notes") or "").strip(),
+            "hold_seconds": float(scene.get("duration", scene.get("hold_seconds", 0)) or 0),
+            "motion": str(scene.get("motion") or "slow Ken Burns").strip(),
+        })
+
+    return {
+        "job_id": job_id,
+        "title": str(payload.get("project_title") or project.get("project_title") or job_id).strip(),
+        "input_text": " ".join(script_lines),
+        "target_duration_seconds": target_duration,
+        "resolution": {"width": DEFAULT_RES[0], "height": DEFAULT_RES[1]},
+        "aspect_ratio": str(payload.get("aspect_ratio") or project.get("aspect_ratio") or "9:16"),
+        "pipeline_target": target,
+        "image_folder": "assets/images/src",
+        "images": images,
+        "output_format": {
+            "container": "mp4",
+            "codec": DEFAULT_CODEC,
+            "hw_accel": None,
+            "crf": DEFAULT_CRF,
+            "preset": DEFAULT_PRESET,
+        },
+    }
+
+
+def scaffold_job_folder(config: dict, src_csv: Path, base_dir: Path | None = None, source_format: str = "csv"):
+    """Create job folder structure and write job_config.json + image src folder."""
+    job_id = config["job_id"]
+    if base_dir is not None:
+        job_dir = base_dir
+    elif source_format == "json":
+        job_dir = src_csv.parent
+    else:
+        job_dir = Path(f"videos/{job_id}")
+    img_src = job_dir / "assets" / "images" / "src"
+    img_proc = job_dir / "assets" / "images" / "processed"
+    out_dir = job_dir / "out"
+    logs_dir = job_dir / "logs"
+    exports_dir = job_dir / "exports"
+    handoff_dir = job_dir / "editor-handoff"
+
+    for d in [img_src, img_proc, out_dir, logs_dir, exports_dir, handoff_dir]:
         d.mkdir(parents=True, exist_ok=True)
 
-    # Write job_config.json
-    cfg_path = job_dir / "job_config.json"
+    cfg_path = (exports_dir / "job_config.json") if source_format == "json" else (job_dir / "job_config.json")
     cfg_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
 
-    # Save a copy of the storyboard CSV for reference
-    shutil.copy(src_csv, job_dir / "storyboard.csv")
+    if source_format == "json":
+        storyboard_dir = job_dir / "storyboard"
+        storyboard_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy(src_csv, storyboard_dir / "source-project.json")
+    else:
+        shutil.copy(src_csv, job_dir / "storyboard.csv")
 
-    # Write a human-readable image checklist
     checklist_lines = [
         f"# Image Checklist for: {config['title']}",
         f"# Place each image in:  {img_src}",
-        f"# Then run:             python scripts/process_images.py videos/{job_id}/job_config.json",
+        f"# Config:              {cfg_path}",
         "",
         f"{'Panel':<6} {'Filename':<30} {'Mode':<8} {'Focal X':<9} {'Focal Y':<9} Scene",
         "-" * 90,
@@ -185,13 +239,31 @@ def scaffold_job_folder(config: dict, src_csv: Path):
     checklist_lines += [
         "",
         "# Next steps:",
-        f"# 1. Drop your images into:  videos/{job_id}/assets/images/src/",
-        f"# 2. Process images:         python scripts/process_images.py videos/{job_id}/job_config.json",
-        f"# 3. Run pipeline:           archon workflow run create-archon-short --no-worktree \"{config['title']}\"",
-        f"# 4. Render:                 npx hyperframes render videos/{job_id} -o videos/{job_id}/out/{job_id}.mp4",
-        f"# 5. Export edit project:    python scripts/export_edit_project.py {job_id}",
+        f"# 1. Drop your images into:  {img_src}",
+        f"# 2. Process images/render using the pipeline command in launch-command.txt",
+        f"# 3. Editor handoff:        {exports_dir / 'editor-handoff.md'}",
     ]
     (job_dir / "IMAGE_CHECKLIST.txt").write_text("\n".join(checklist_lines), encoding="utf-8")
+
+    handoff_lines = [
+        f"# Editor Handoff: {config['title']}",
+        "",
+        f"Pipeline: {config.get('pipeline_target', 'short-shorts')}",
+        f"Aspect ratio: {config.get('aspect_ratio', '9:16')}",
+        f"Target duration: {config.get('target_duration_seconds')}s",
+        "",
+        "## Scenes",
+    ]
+    for img in config["images"]:
+        handoff_lines += [
+            "",
+            f"### {img['panel']}. {img.get('scene_description', '')}",
+            f"- Asset: {img.get('filename', '')}",
+            f"- Duration: {img.get('hold_seconds', '')}s",
+            f"- Motion: {img.get('motion', 'slow Ken Burns')}",
+            f"- Narration: {img.get('narration', '')}",
+        ]
+    (exports_dir / "editor-handoff.md").write_text("\n".join(handoff_lines) + "\n", encoding="utf-8")
 
     return job_dir, cfg_path, img_src
 
@@ -220,37 +292,51 @@ def print_preview(config: dict):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert storyboard CSV to job_config.json")
-    parser.add_argument("csv_file", help="Path to storyboard CSV file")
-    parser.add_argument("--preview", action="store_true",
+    parser = argparse.ArgumentParser(description="Convert storyboard CSV/bridge JSON to job_config.json")
+    parser.add_argument("storyboard_file", help="Path to storyboard CSV or bridge project.json file")
+    parser.add_argument("--target", choices=["short-shorts", "longer-shorts", "montage"],
+                        help="Override pipeline target for bridge JSON input")
+    parser.add_argument("--preview", "--dry-run", action="store_true", dest="preview",
                         help="Print a preview table without writing files")
     parser.add_argument("--open-folder", action="store_true",
-                        help="Open the job folder in Explorer/Finder after creation (Windows/Mac)")
+                        help="Open the image folder in Explorer/Finder after creation (Windows/Mac)")
     args = parser.parse_args()
 
-    csv_path = Path(args.csv_file)
-    if not csv_path.exists():
-        print(f"ERROR: File not found: {csv_path}")
+    source_path = Path(args.storyboard_file)
+    if not source_path.exists():
+        print(f"ERROR: File not found: {source_path}")
         sys.exit(1)
 
-    print(f"\nReading storyboard: {csv_path}")
-    job_meta, panels = parse_storyboard_csv(csv_path)
-    config = build_job_config(job_meta, panels)
+    print(f"\nReading storyboard: {source_path}")
+    if source_path.suffix.lower() == ".json":
+        project = json.loads(source_path.read_text(encoding="utf-8"))
+        if args.target:
+            project["pipeline_target"] = args.target
+            project.setdefault("payload", {})["pipeline_target"] = args.target
+        config = build_job_config_from_bridge_project(project)
+        source_format = "json"
+    else:
+        job_meta, panels = parse_storyboard_csv(source_path)
+        config = build_job_config(job_meta, panels)
+        if args.target:
+            config["pipeline_target"] = args.target
+        source_format = "csv"
 
     print_preview(config)
 
     if args.preview:
-        print("Preview only — no files written. Remove --preview to generate.")
+        print("Preview only — no files written. Remove --preview/--dry-run to generate.")
         sys.exit(0)
 
-    job_dir, cfg_path, img_src = scaffold_job_folder(config, csv_path)
+    job_dir, cfg_path, img_src = scaffold_job_folder(config, source_path, source_format=source_format)
 
     print(f"✓  job_config.json  →  {cfg_path}")
     print(f"✓  Image src folder →  {img_src}")
     print(f"✓  Checklist        →  {job_dir}/IMAGE_CHECKLIST.txt")
+    print(f"✓  Editor handoff   →  {job_dir}/exports/editor-handoff.md")
     print()
     print(f"  NEXT: Drop your images into  {img_src}")
-    print(f"  THEN: python scripts/process_images.py {cfg_path}")
+    print(f"  THEN: continue with launch-command.txt or live renderer command")
     print()
 
     if args.open_folder:

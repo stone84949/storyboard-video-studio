@@ -1,0 +1,117 @@
+{
+  "job_id": "20260628-054612-codex-ui-smoke",
+  "created_at": "2026-06-28T09:46:12.287536+00:00",
+  "machine": "beast",
+  "engine": "hyperframes",
+  "run_label": "codex-ui-smoke",
+  "execute_requested": false,
+  "live_execution_enabled": false,
+  "pipeline_target": "longer-shorts",
+  "aspect_ratio": "9:16",
+  "project_title": "Codex UI Smoke",
+  "payload": {
+    "launcher": {
+      "execute": false,
+      "machine": "beast",
+      "run_label": "codex-ui-smoke",
+      "engine": "hyperframes"
+    },
+    "storyboard": {
+      "workflow_stage": "plan",
+      "id": "codex-ui-smoke",
+      "total_duration_sec": 6.4,
+      "pipeline_target": "longer-shorts",
+      "task_id": "task-codex-ui-smoke",
+      "aspect_ratio": "9:16",
+      "title": "Codex UI Smoke",
+      "scenes": [
+        {
+          "narration": "Opening line",
+          "title": "Hook",
+          "duration": 3.2,
+          "assetUrl": "hook.jpg",
+          "id": "scene-01",
+          "motionPreset": "zoom-in"
+        },
+        {
+          "narration": "Proof line",
+          "title": "Proof",
+          "duration": 3.2,
+          "assetUrl": "proof.jpg",
+          "id": "scene-02",
+          "motionPreset": "pan-left-right"
+        }
+      ]
+    },
+    "project_title": "Codex UI Smoke",
+    "aspect_ratio": "9:16",
+    "pipeline_target": "longer-shorts",
+    "target_duration_seconds": 6.4,
+    "scenes": [
+      {
+        "narration": "Opening line",
+        "title": "Hook",
+        "duration": 3.2,
+        "assetUrl": "hook.jpg",
+        "id": "scene-01",
+        "motionPreset": "zoom-in",
+        "asset": "hook.jpg",
+        "motion": "zoom-in",
+        "vo_seconds": 3.2
+      },
+      {
+        "narration": "Proof line",
+        "title": "Proof",
+        "duration": 3.2,
+        "assetUrl": "proof.jpg",
+        "id": "scene-02",
+        "motionPreset": "pan-left-right",
+        "asset": "proof.jpg",
+        "motion": "pan-left-right",
+        "vo_seconds": 3.2
+      }
+    ]
+  },
+  "source_payload": {
+    "launcher": {
+      "execute": false,
+      "machine": "beast",
+      "run_label": "codex-ui-smoke",
+      "engine": "hyperframes"
+    },
+    "storyboard": {
+      "workflow_stage": "plan",
+      "id": "codex-ui-smoke",
+      "total_duration_sec": 6.4,
+      "pipeline_target": "longer-shorts",
+      "task_id": "task-codex-ui-smoke",
+      "aspect_ratio": "9:16",
+      "title": "Codex UI Smoke",
+      "scenes": [
+        {
+          "narration": "Opening line",
+          "title": "Hook",
+          "duration": 3.2,
+          "assetUrl": "hook.jpg",
+          "id": "scene-01",
+          "motionPreset": "zoom-in"
+        },
+        {
+          "narration": "Proof line",
+          "title": "Proof",
+          "duration": 3.2,
+          "assetUrl": "proof.jpg",
+          "id": "scene-02",
+          "motionPreset": "pan-left-right"
+        }
+      ]
+    }
+  },
+  "folders": {
+    "storyboard": "storyboard/",
+    "scenes": "scenes/",
+    "exports": "exports/",
+    "editor_handoff": "editor-handoff/",
+    "logs": "logs/"
+  }
+}

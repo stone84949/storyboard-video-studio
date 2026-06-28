@@ -1,0 +1,105 @@
+{
+  "job_id": "20260628-074528-generated-assets-hyperframes-proof",
+  "created_at": "2026-06-28T11:45:28.440908+00:00",
+  "machine": "BEAST",
+  "engine": "hyperframes",
+  "run_label": "generated-assets-hyperframes-proof",
+  "execute_requested": false,
+  "live_execution_enabled": false,
+  "pipeline_target": "short-shorts",
+  "aspect_ratio": "9:16",
+  "project_title": "Generated Assets HyperFrames Proof",
+  "payload": {
+    "project_title": "Generated Assets HyperFrames Proof",
+    "pipeline_target": "short-shorts",
+    "aspect_ratio": "9:16",
+    "scenes": [
+      {
+        "id": "scene-001",
+        "title": "Forgotten archive door",
+        "asset": "assets\\images\\materialized\\001-scene-001.svg",
+        "asset_state": "materialized",
+        "duration": 2.0,
+        "motion": "slow push in",
+        "narration": "A sealed archive door waits in the dark.",
+        "vo_seconds": 2.0,
+        "assetUrl": "assets\\images\\materialized\\001-scene-001.svg",
+        "asset_url": "assets\\images\\materialized\\001-scene-001.svg",
+        "assetState": "materialized"
+      },
+      {
+        "id": "scene-002",
+        "title": "Evidence board reveal",
+        "asset": "assets\\images\\materialized\\002-scene-002.svg",
+        "asset_state": "materialized",
+        "duration": 2.0,
+        "motion": "slow pan right",
+        "narration": "The first clue appears on the evidence board.",
+        "vo_seconds": 2.0,
+        "assetUrl": "assets\\images\\materialized\\002-scene-002.svg",
+        "asset_url": "assets\\images\\materialized\\002-scene-002.svg",
+        "assetState": "materialized"
+      },
+      {
+        "id": "scene-003",
+        "title": "Final unanswered question",
+        "asset": "assets\\images\\materialized\\003-scene-003.svg",
+        "asset_state": "materialized",
+        "duration": 2.0,
+        "motion": "slow drift",
+        "narration": "The mystery ends with one unanswered question.",
+        "vo_seconds": 2.0,
+        "assetUrl": "assets\\images\\materialized\\003-scene-003.svg",
+        "asset_url": "assets\\images\\materialized\\003-scene-003.svg",
+        "assetState": "materialized"
+      }
+    ]
+  },
+  "source_payload": {
+    "project_title": "Generated Assets HyperFrames Proof",
+    "pipeline_target": "short-shorts",
+    "aspect_ratio": "9:16",
+    "scenes": [
+      {
+        "id": "scene-001",
+        "title": "Forgotten archive door",
+        "asset": "",
+        "asset_state": "needs-image",
+        "duration": 2.0,
+        "motion": "slow push in",
+        "narration": "A sealed archive door waits in the dark."
+      },
+      {
+        "id": "scene-002",
+        "title": "Evidence board reveal",
+        "asset": "",
+        "asset_state": "needs-image",
+        "duration": 2.0,
+        "motion": "slow pan right",
+        "narration": "The first clue appears on the evidence board."
+      },
+      {
+        "id": "scene-003",
+        "title": "Final unanswered question",
+        "asset": "",
+        "asset_state": "needs-image",
+        "duration": 2.0,
+        "motion": "slow drift",
+        "narration": "The mystery ends with one unanswered question."
+      }
+    ]
+  },
+  "folders": {
+    "storyboard": "storyboard/",
+    "scenes": "scenes/",
+    "exports": "exports/",
+    "editor_handoff": "editor-handoff/",
+    "logs": "logs/"
+  },
+  "asset_materialization": {
+    "provider_requested": "grok",
+    "provider_used": "grok",
+    "fallback_enabled": true,
+    "manifest": "exports/asset-manifest.json"
+  }
+}

@@ -1,0 +1,1 @@
+DRY RUN only for montage: python scripts/prepare_montage_handoff.py bridge-jobs\20260628-063212-montage-dry-run/project.json

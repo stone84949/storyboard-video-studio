@@ -1,0 +1,10 @@
+{
+  "index": 2,
+  "id": "scene-002",
+  "title": "Context",
+  "narration": "But the town listed in the caption vanished from modern maps.",
+  "duration": 7,
+  "vo_seconds": 4.5,
+  "asset": "town-map.jpg",
+  "motion": "slow pan left"
+}

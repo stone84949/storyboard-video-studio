@@ -1,0 +1,11 @@
+{
+  "index": 2,
+  "id": "scene-002",
+  "title": "Map movement",
+  "narration": "Trace the route from the main road to the abandoned site.",
+  "duration": 8,
+  "vo_seconds": 4.4,
+  "asset": "map-route.png",
+  "motion": "animated crop from west to east",
+  "notes": "Resolve or Shotcut finishing."
+}

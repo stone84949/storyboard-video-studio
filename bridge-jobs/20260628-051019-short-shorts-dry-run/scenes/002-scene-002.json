@@ -1,0 +1,10 @@
+{
+  "index": 2,
+  "id": "scene-002",
+  "title": "Twist",
+  "narration": "The date on the back made no sense.",
+  "duration": 5,
+  "vo_seconds": 3,
+  "asset": "photo-back.jpg",
+  "motion": "slow pan right"
+}

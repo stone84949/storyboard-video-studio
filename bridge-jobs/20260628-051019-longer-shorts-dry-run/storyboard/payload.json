@@ -1,0 +1,62 @@
+{
+  "project_title": "Longer Shorts Dry Run",
+  "pipeline_target": "longer-shorts",
+  "aspect_ratio": "9:16",
+  "target_duration_seconds": 55,
+  "scenes": [
+    {
+      "id": "scene-001",
+      "title": "Cold open",
+      "narration": "The first clue looks like a normal newspaper clipping.",
+      "duration": 6,
+      "vo_seconds": 3.8,
+      "asset": "clipping.jpg",
+      "motion": "slow push in"
+    },
+    {
+      "id": "scene-002",
+      "title": "Context",
+      "narration": "But the town listed in the caption vanished from modern maps.",
+      "duration": 7,
+      "vo_seconds": 4.5,
+      "asset": "town-map.jpg",
+      "motion": "slow pan left"
+    },
+    {
+      "id": "scene-003",
+      "title": "Archive",
+      "narration": "A county ledger mentions the place only once.",
+      "duration": 7,
+      "vo_seconds": 3.2,
+      "asset": "ledger.jpg",
+      "motion": "slow tilt down"
+    },
+    {
+      "id": "scene-004",
+      "title": "Witness",
+      "narration": "One witness claimed the road signs were removed overnight.",
+      "duration": 8,
+      "vo_seconds": 4.4,
+      "asset": "road-sign.jpg",
+      "motion": "slow pan right"
+    },
+    {
+      "id": "scene-005",
+      "title": "Theory",
+      "narration": "The most likely explanation is less supernatural but still strange.",
+      "duration": 8,
+      "vo_seconds": 4.1,
+      "asset": "survey.jpg",
+      "motion": "slow zoom out"
+    },
+    {
+      "id": "scene-006",
+      "title": "Close",
+      "narration": "The archive preserved the town after everyone else forgot it.",
+      "duration": 7,
+      "vo_seconds": 3.9,
+      "asset": "archive-box.jpg",
+      "motion": "slow push in"
+    }
+  ]
+}

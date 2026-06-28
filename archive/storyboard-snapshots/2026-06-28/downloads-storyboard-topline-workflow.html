@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Storyboard Topline Workflow</title>
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;
+      --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;--color-surface-offset:#f3f0ec;--color-divider:#dcd9d5;
+      --color-text:#28251d;--color-text-muted:#6d6b66;--color-text-faint:#a8a59e;--color-text-inverse:#f9f8f4;
+      --color-primary:#01696f;--color-primary-hover:#0c4e54;--color-primary-highlight:#cedcd8;--color-success:#437a22;--color-warning:#964219;--color-error:#a12c7b;--color-blue:#006494;--color-purple:#7a39bb;--color-orange:#da7101;
+      --radius-sm:0.375rem;--radius-md:0.5rem;--radius-lg:0.75rem;--radius-xl:1rem;--radius-full:9999px;
+      --shadow-sm:0 1px 2px oklch(0.2 0.01 80 / 0.06);--shadow-md:0 6px 18px oklch(0.2 0.01 80 / 0.08);--shadow-lg:0 16px 42px oklch(0.2 0.01 80 / 0.12);
+      --font-body:'Satoshi',Inter,sans-serif;--px-per-second:56;
+    }
+    [data-theme="dark"] {
+      --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;--color-surface-offset:#23211f;--color-divider:#262523;
+      --color-text:#e1dfdb;--color-text-muted:#a5a29b;--color-text-faint:#6a6863;--color-text-inverse:#161412;
+      --color-primary:#4f98a3;--color-primary-hover:#227f8b;--color-primary-highlight:#313b3b;--color-success:#6daa45;--color-warning:#bb653b;--color-error:#d163a7;--color-blue:#5591c7;--color-purple:#a86fdf;--color-orange:#fdab43;
+      --shadow-sm:0 1px 2px oklch(0 0 0 / 0.2);--shadow-md:0 6px 18px oklch(0 0 0 / 0.34);--shadow-lg:0 16px 42px oklch(0 0 0 / 0.45);
+    }
+    *,:before,:after{box-sizing:border-box} html,body{height:100%;margin:0} body{font-family:var(--font-body);font-size:var(--text-base);background:var(--color-bg);color:var(--color-text);overflow:hidden}
+    button,input,select,textarea{font:inherit;color:inherit} button{cursor:pointer;border:none;background:none} textarea,input,select{background:var(--color-surface-offset);border:1px solid oklch(from var(--color-text) l c h / 0.12);border-radius:var(--radius-md);padding:.72rem .85rem}
+    textarea{resize:vertical;min-height:80px} img{display:block;max-width:100%}
+    .app{display:grid;grid-template-columns:280px 1fr 420px;grid-template-rows:auto auto 1fr 300px;height:100dvh}
+    .sidebar{grid-row:1/-1;border-right:1px solid var(--color-divider);background:var(--color-surface);overflow:auto}.topbar{grid-column:2/4;display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--color-divider);background:color-mix(in oklab,var(--color-surface) 84%, transparent);backdrop-filter:blur(16px)}
+    .workflowbar{grid-column:2/4;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--space-3);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--color-divider);background:var(--color-surface-2)}
+    .main{grid-column:2;grid-row:3;overflow:auto;padding:var(--space-5)} .inspector{grid-column:3;grid-row:3/-1;border-left:1px solid var(--color-divider);background:var(--color-surface);overflow:auto} .timeline{grid-column:2;grid-row:4;border-top:1px solid var(--color-divider);background:var(--color-surface)}
+    .brand,.section,.card,.inspector-card,.json-card,.bundle-card{padding:var(--space-4)} .brand{display:flex;align-items:center;gap:var(--space-3);border-bottom:1px solid var(--color-divider)} .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:white;background:linear-gradient(135deg,var(--color-primary),color-mix(in oklab,var(--color-blue) 60%,var(--color-primary)))}
+    .section{display:grid;gap:var(--space-3);border-bottom:1px solid var(--color-divider)} .section-title{display:flex;align-items:center;justify-content:space-between;font-size:var(--text-sm);font-weight:800;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.03em}
+    .stack,.scene-stack,.asset-stack,.file-tree{display:grid;gap:var(--space-2)} .nav-btn,.tool-btn,.scene-card,.file-row,.track-label,.asset-row,.workflow-step{display:flex;align-items:center;gap:var(--space-3);padding:.8rem .95rem;border:1px solid oklch(from var(--color-text) l c h / 0.08);background:var(--color-surface-2);border-radius:var(--radius-lg)}
+    .tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)} .tool-btn{justify-content:center;font-size:var(--text-sm);font-weight:700} .scene-card.active,.asset-row.active,.workflow-step.active{background:color-mix(in oklab,var(--color-primary-highlight) 44%,var(--color-surface-2));border-color:oklch(from var(--color-primary) l c h / 0.35)}
+    .workflow-step{justify-content:space-between;cursor:pointer}.workflow-step.done{border-color:oklch(from var(--color-success) l c h / 0.35)} .workflow-step .step-meta{display:grid;gap:2px}.workflow-step small{color:var(--color-text-muted);font-size:12px}
+    .workspace{display:grid;grid-template-columns:1.14fr .96fr;gap:var(--space-5)} .card,.inspector-card,.json-card,.bundle-card{background:var(--color-surface);border:1px solid oklch(from var(--color-text) l c h / 0.08);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm)}
+    .row,.action-row,.field-grid,.status-row{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap} .field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)} .field{display:grid;gap:var(--space-2)} .field label{font-size:var(--text-xs);font-weight:800;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.03em}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);padding:.78rem 1rem;border-radius:var(--radius-lg);border:1px solid oklch(from var(--color-text) l c h / 0.1);background:var(--color-surface-2);font-size:var(--text-sm);font-weight:700}.btn.primary{background:var(--color-primary);color:var(--color-text-inverse);border-color:transparent}.btn.orange{background:var(--color-orange);color:#1c140c;border-color:transparent}
+    .canvas-stage{position:relative;aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;background:#0c1117;border:1px solid oklch(from var(--color-text) l c h / 0.08)} .canvas-stage img{width:100%;height:100%;object-fit:cover}.safe-guides{position:absolute;inset:0;pointer-events:none}.safe-guides:before,.safe-guides:after{content:"";position:absolute;border:1px dashed rgba(255,255,255,.42);inset:8%}.safe-guides:after{inset:16% 10%}
+    .scene-card{align-items:flex-start;text-align:left}.thumb{width:104px;aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;background:var(--color-surface-offset);flex:0 0 auto}.thumb img{width:100%;height:100%;object-fit:cover}.pill{display:inline-flex;align-items:center;padding:.3rem .56rem;border-radius:var(--radius-full);font-size:var(--text-xs);background:var(--color-surface-offset)} .muted{color:var(--color-text-muted)} .faint{color:var(--color-text-faint)}
+    .asset-stack{grid-template-columns:1fr}.asset-row{justify-content:space-between}.json-box{width:100%;min-height:220px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+    .timeline-head{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-divider)} .timeline-body{display:grid;grid-template-columns:220px 1fr;height:240px}.track-labels{padding:var(--space-3);display:grid;gap:var(--space-2);border-right:1px solid var(--color-divider);background:var(--color-surface-2)} .track-main{position:relative;overflow:auto;padding:var(--space-3);background:linear-gradient(90deg,color-mix(in oklab,var(--color-surface-offset) 70%,transparent) 1px,transparent 1px) 0 0 / var(--px-per-second) 100%,var(--color-surface)}
+    .time-ruler{display:grid;grid-auto-flow:column;grid-auto-columns:var(--px-per-second);position:sticky;top:0;background:color-mix(in oklab,var(--color-surface) 95%, transparent)} .time-ruler div{padding:.25rem .15rem;font-size:var(--text-xs);color:var(--color-text-muted)} .clip-row{position:relative;height:44px;border-radius:var(--radius-lg);background:var(--color-surface-offset);margin-top:var(--space-3)}
+    .clip{position:absolute;top:4px;bottom:4px;border-radius:12px;color:#fff;justify-content:space-between;min-width:58px;user-select:none;font-size:var(--text-xs);font-weight:800}.clip.scene{background:linear-gradient(90deg,var(--color-primary),color-mix(in oklab,var(--color-blue) 40%,var(--color-primary)))} .clip.motion{background:linear-gradient(90deg,var(--color-purple),#5b8ff0)} .clip.text{background:linear-gradient(90deg,#b95525,#ed8c53)} .clip.audio{background:linear-gradient(90deg,#4d8f25,#6daa45)} .clip .resize{position:absolute;top:0;bottom:0;width:10px;cursor:ew-resize}.clip .resize.left{left:0}.clip .resize.right{right:0}
+    .file-tree{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.file-row{justify-content:space-between}.status-chip{display:inline-flex;align-items:center;gap:var(--space-2);padding:.45rem .7rem;border-radius:var(--radius-full);background:var(--color-surface-offset);font-size:var(--text-xs);font-weight:700}
+    .mode-tabs{display:flex;gap:var(--space-2);flex-wrap:wrap}.mode-tab{padding:.55rem .8rem;border-radius:var(--radius-full);border:1px solid oklch(from var(--color-text) l c h / 0.1);background:var(--color-surface-2);font-size:var(--text-xs);font-weight:800}.mode-tab.active{background:var(--color-primary);color:var(--color-text-inverse);border-color:transparent}
+    @media (max-width: 1200px){.app{grid-template-columns:260px 1fr;grid-template-rows:auto auto 1fr 320px auto}.inspector{grid-column:1/-1;grid-row:5;border-left:none;border-top:1px solid var(--color-divider)}.topbar,.workflowbar{grid-column:2}.workflowbar{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace{grid-template-columns:1fr}}
+    @media (max-width: 820px){body{overflow:auto}.app{display:block;height:auto}.workflowbar{grid-template-columns:1fr 1fr}.timeline-body{grid-template-columns:1fr}.track-labels{display:none}.tool-grid,.field-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"><i data-lucide="workflow"></i></div>
+        <div>
+          <div style="font-size:var(--text-lg);font-weight:900">Topline Workflow</div>
+          <div class="muted" style="font-size:var(--text-sm)">Storyboard -> export -> render -> review.</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title"><span>Actions</span><span class="faint">Build</span></div>
+        <div class="tool-grid">
+          <button class="tool-btn" id="addSceneBtn"><i data-lucide="image-plus"></i><span>Add scene</span></button>
+          <button class="tool-btn" id="duplicateSceneBtn"><i data-lucide="copy-plus"></i><span>Duplicate</span></button>
+          <button class="tool-btn" id="flagSceneBtn"><i data-lucide="flag"></i><span>Flag</span></button>
+          <button class="tool-btn" id="saveLocalBtn"><i data-lucide="hard-drive-download"></i><span>Save local</span></button>
+          <button class="tool-btn" id="loadLocalBtn"><i data-lucide="hard-drive-upload"></i><span>Load local</span></button>
+          <button class="tool-btn" id="themeBtn"><i data-lucide="moon-star"></i><span>Theme</span></button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title"><span>Export modes</span><span class="faint">Targets</span></div>
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="hyperframes">HyperFrames</button>
+          <button class="mode-tab" data-mode="openmontage">OpenMontage</button>
+          <button class="mode-tab" data-mode="bundle">Generic bundle</button>
+        </div>
+        <div class="muted" id="modeHelp" style="font-size:var(--text-sm)">HyperFrames mode exports composition-style render configs.</div>
+      </div>
+      <div class="section">
+        <div class="section-title"><span>Bundle files</span><span class="faint">Exported</span></div>
+        <div class="file-tree" id="bundleTree"></div>
+      </div>
+    </aside>
+
+    <header class="topbar">
+      <div>
+        <div style="font-size:var(--text-xl);font-weight:900">Storyboard Workflow Control Surface</div>
+        <div class="muted" id="missionStatus">Top-line control layer for storyboard, rendering, and handoff.</div>
+      </div>
+      <div class="action-row">
+        <button class="btn" id="importJsonBtn"><i data-lucide="folder-open"></i><span>Import JSON</span></button>
+        <button class="btn" id="exportJsonBtn"><i data-lucide="file-json-2"></i><span>Export JSON</span></button>
+        <button class="btn primary" id="exportHyperBtn"><i data-lucide="clapperboard"></i><span>Export HyperFrames</span></button>
+        <button class="btn orange" id="exportMontageBtn"><i data-lucide="boxes"></i><span>Export OpenMontage</span></button>
+        <input type="file" id="jsonFileInput" accept="application/json,.json" hidden>
+      </div>
+    </header>
+
+    <section class="workflowbar" id="workflowBar"></section>
+
+    <main class="main">
+      <div class="workspace">
+        <section class="card stack">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div class="section-title" style="padding:0;border:none"><span>Preview</span><span class="faint" id="previewSceneCode">Scene 01</span></div>
+              <div style="font-size:var(--text-lg);font-weight:800" id="previewTitle">Cold open visual</div>
+            </div>
+            <div class="action-row">
+              <button class="btn" id="markReadyBtn"><i data-lucide="circle-check-big"></i><span>Ready</span></button>
+              <button class="btn" id="markApprovedBtn"><i data-lucide="badge-check"></i><span>Approve</span></button>
+              <button class="btn" id="markExportedBtn"><i data-lucide="send"></i><span>Exported</span></button>
+            </div>
+          </div>
+          <div class="canvas-stage">
+            <img id="previewImage" src="https://picsum.photos/seed/story-scene1/1280/720" alt="Scene preview" width="1280" height="720">
+            <div class="safe-guides"></div>
+          </div>
+          <div class="status-row">
+            <span class="status-chip" id="durationBadge">3.2s</span>
+            <span class="status-chip" id="motionBadge">zoom-in</span>
+            <span class="status-chip" id="sceneStatusBadge">raw</span>
+            <span class="status-chip" id="workflowStageBadge">plan</span>
+          </div>
+          <div class="scene-stack" id="sceneStack"></div>
+        </section>
+
+        <section class="bundle-card stack">
+          <div class="section-title" style="padding:0;border:none"><span>Assets and handoff</span><span class="faint" id="assetCountLabel">4 assets</span></div>
+          <div class="field"><label>Asset URL</label><input id="newAssetUrl" type="text" placeholder="https://..." /></div>
+          <div class="field-grid">
+            <div class="field"><label>Asset title</label><input id="newAssetTitle" type="text" placeholder="Hook frame" /></div>
+            <div class="field"><label>Kind</label><select id="newAssetKind"><option>image</option><option>reference</option><option>end-card</option></select></div>
+          </div>
+          <div class="action-row"><button class="btn" id="addAssetBtn"><i data-lucide="plus"></i><span>Add asset</span></button><button class="btn" id="assignAssetBtn"><i data-lucide="link-2"></i><span>Assign selected asset</span></button></div>
+          <div class="asset-stack" id="assetStack"></div>
+          <div class="field"><label>OpenMontage handoff brief</label><textarea id="montageBriefInput">Use this storyboard as the approved scene plan, preserve timing intent, use provided assets where available, and only generate missing assets or narration where gaps are marked.</textarea></div>
+        </section>
+      </div>
+    </main>
+
+    <aside class="inspector">
+      <div class="inspector-card stack">
+        <div class="section-title" style="padding:0;border:none"><span>Scene inspector</span><span class="faint" id="inspectorSceneCode">Scene 01</span></div>
+        <div class="field"><label>Shot name</label><input id="shotNameInput" type="text"></div>
+        <div class="field"><label>Asset URL</label><input id="assetUrlInput" type="text"></div>
+        <div class="field-grid">
+          <div class="field"><label>Duration</label><input id="durationInput" type="number" min="0.5" step="0.1"></div>
+          <div class="field"><label>Transition</label><select id="transitionInput"><option>fade</option><option>slide</option><option>cut</option></select></div>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label>Motion</label><select id="motionInput"><option>zoom-in</option><option>pan-left-right</option><option>pan-right-left</option><option>push-in</option><option>static</option></select></div>
+          <div class="field"><label>Status</label><select id="statusInput"><option>raw</option><option>ready</option><option>approved</option><option>exported</option><option>flagged</option></select></div>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label>Workflow stage</label><select id="workflowStageInput"><option>plan</option><option>approve</option><option>export</option><option>render</option><option>review</option><option>publish</option></select></div>
+          <div class="field"><label>Aspect</label><select id="aspectInput"><option>16:9</option><option>9:16</option><option>1:1</option></select></div>
+        </div>
+        <div class="field"><label>Prompt notes</label><textarea id="notesInput"></textarea></div>
+        <div class="field"><label>Caption</label><textarea id="captionInput"></textarea></div>
+      </div>
+
+      <div class="json-card stack">
+        <div class="section-title" style="padding:0;border:none"><span>Current export JSON</span><span class="faint" id="jsonModeLabel">HyperFrames</span></div>
+        <textarea id="projectJsonBox" class="json-box"></textarea>
+        <div class="action-row">
+          <button class="btn" id="refreshJsonBtn"><i data-lucide="refresh-cw"></i><span>Refresh</span></button>
+          <button class="btn" id="applyJsonBtn"><i data-lucide="download"></i><span>Apply</span></button>
+        </div>
+      </div>
+
+      <div class="bundle-card stack">
+        <div class="section-title" style="padding:0;border:none"><span>Mission Control</span><span class="faint">Hook</span></div>
+        <div class="file-row"><span>Run ID</span><span id="runInfo">pending</span></div>
+        <div class="file-row"><span>Task ID</span><span id="taskInfo">pending</span></div>
+        <div class="file-row"><span>Deep-link</span><span id="linkInfo" class="faint">ready</span></div>
+      </div>
+    </aside>
+
+    <section class="timeline">
+      <div class="timeline-head">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div class="section-title" style="padding:0;border:none"><span>Timeline</span><span class="faint">Clip timing</span></div>
+            <div style="font-size:var(--text-base);font-weight:800">Plan visually, then export directly to HyperFrames or as an OpenMontage handoff bundle.</div>
+          </div>
+          <div class="action-row">
+            <button class="btn" id="zoomOutBtn"><i data-lucide="minus"></i><span>Zoom out</span></button>
+            <button class="btn" id="zoomInBtn"><i data-lucide="plus"></i><span>Zoom in</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-body">
+        <div class="track-labels">
+          <div class="track-label"><i data-lucide="image"></i><span>Scene track</span></div>
+          <div class="track-label"><i data-lucide="sparkles"></i><span>Motion track</span></div>
+          <div class="track-label"><i data-lucide="captions"></i><span>Text track</span></div>
+          <div class="track-label"><i data-lucide="audio-lines"></i><span>Audio track</span></div>
+        </div>
+        <div class="track-main">
+          <div class="time-ruler" id="timeRuler"></div>
+          <div class="clip-row" id="sceneTrack"></div>
+          <div class="clip-row" id="motionTrack"></div>
+          <div class="clip-row" id="textTrack"></div>
+          <div class="clip-row" id="audioTrack"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const DEFAULT_STATE = {
+      project: { storyboardId:'storyboard-topline-001', title:'Storyboard Workflow Control Surface', fps:30, aspectRatio:'9:16', outputMode:'hyperframes', pxPerSecond:56, workflowStage:'plan', runContext:{runId:'', taskId:'', source:'manual'} },
+      exportMode:'hyperframes',
+      workflowStages:['plan','approve','export','render','review','publish'],
+      montageBrief:'Use this storyboard as the approved scene plan, preserve timing intent, use provided assets where available, and only generate missing assets or narration where gaps are marked.',
+      assets: [
+        { id:'asset-01', title:'Cold open frame', kind:'image', url:'https://picsum.photos/seed/story-scene1/600/338' },
+        { id:'asset-02', title:'Problem setup frame', kind:'image', url:'https://picsum.photos/seed/story-scene2/600/338' },
+        { id:'asset-03', title:'Main point frame', kind:'image', url:'https://picsum.photos/seed/story-scene3/600/338' },
+        { id:'asset-04', title:'CTA frame', kind:'end-card', url:'https://picsum.photos/seed/story-scene4/600/338' }
+      ],
+      scenes: [
+        { id:'scene-01', order:1, title:'Cold open visual', assetId:'asset-01', assetUrl:'https://picsum.photos/seed/story-scene1/600/338', duration:3.2, start:0, transition:'fade', motionPreset:'zoom-in', status:'raw', workflowStage:'plan', promptNote:'Fast hook frame with center-safe title area.', captionText:'The first 3 seconds decide everything.', flags:[], lifecycle:{createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()} },
+        { id:'scene-02', order:2, title:'Problem setup', assetId:'asset-02', assetUrl:'https://picsum.photos/seed/story-scene2/600/338', duration:4.8, start:3.2, transition:'cut', motionPreset:'pan-right-left', status:'ready', workflowStage:'approve', promptNote:'Show the pain point and leave room for side captions.', captionText:'Show the pain fast.', flags:['needs-reframe'], lifecycle:{createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()} },
+        { id:'scene-03', order:3, title:'Main point visual', assetId:'asset-03', assetUrl:'https://picsum.photos/seed/story-scene3/600/338', duration:5.0, start:8.0, transition:'fade', motionPreset:'pan-left-right', status:'approved', workflowStage:'export', promptNote:'Proof frame with clean lower-third area.', captionText:'Drop the strongest evidence here.', flags:[], lifecycle:{createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()} },
+        { id:'scene-04', order:4, title:'CTA / end screen', assetId:'asset-04', assetUrl:'https://picsum.photos/seed/story-scene4/600/338', duration:3.5, start:13.0, transition:'slide', motionPreset:'static', status:'exported', workflowStage:'review', promptNote:'End card with final CTA.', captionText:'Tell them what to do next.', flags:[], lifecycle:{createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()} }
+      ],
+      selectedSceneId:'scene-01',
+      selectedAssetId:'asset-01'
+    };
+
+    let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    const q = (id) => document.getElementById(id);
+    function formatTime(sec){ const total=Math.max(0,Number(sec)||0); const m=Math.floor(total/60); const s=(total%60).toFixed(1).padStart(4,'0'); return `${m}:${s}`; }
+    function totalDuration(){ return state.scenes.reduce((sum,s)=>sum+Number(s.duration||0),0); }
+    function recalcStarts(){ let cursor=0; state.scenes.forEach((scene,index)=>{ scene.order=index+1; scene.start=Number(cursor.toFixed(2)); cursor += Number(scene.duration); scene.lifecycle = scene.lifecycle || {}; scene.lifecycle.updatedAt = new Date().toISOString(); }); }
+    function getSelectedScene(){ return state.scenes.find(s=>s.id===state.selectedSceneId) || state.scenes[0]; }
+    function getSelectedAsset(){ return state.assets.find(a=>a.id===state.selectedAssetId) || state.assets[0]; }
+    function syncAssetRefs(){ state.scenes.forEach(scene=>{ const asset=state.assets.find(a=>a.id===scene.assetId); if(asset) scene.assetUrl=asset.url; }); }
+    function buildMissionLink(){ const params=new URLSearchParams(); if(state.project.runContext.runId) params.set('runId',state.project.runContext.runId); if(state.project.runContext.taskId) params.set('taskId',state.project.runContext.taskId); params.set('storyboardId',state.project.storyboardId); return `./storyboard-topline-workflow.html?${params.toString()}`; }
+
+    function buildBundleData(){
+      syncAssetRefs();
+      const total = Number(totalDuration().toFixed(2));
+      const fps = state.project.fps;
+      const width = state.project.aspectRatio === '9:16' ? 1080 : state.project.aspectRatio === '1:1' ? 1080 : 1920;
+      const height = state.project.aspectRatio === '9:16' ? 1920 : state.project.aspectRatio === '1:1' ? 1080 : 1080;
+      const projectJson = {
+        id: state.project.storyboardId,
+        title: state.project.title,
+        fps,
+        aspect_ratio: state.project.aspectRatio,
+        total_duration_sec: total,
+        output_mode: state.exportMode,
+        workflow_stage: state.project.workflowStage,
+        scene_ids: state.scenes.map(scene=>scene.id),
+        asset_ids: state.assets.map(asset=>asset.id),
+        mission_control: { run_id: state.project.runContext.runId || null, task_id: state.project.runContext.taskId || null, source: state.project.runContext.source || 'manual' }
+      };
+      const assetsJson = { assets: state.assets };
+      const statusJson = { pipeline:['plan','approve','export','render','review','publish'], scenes: state.scenes.reduce((acc,scene)=>{ acc[scene.id]={ title:scene.title, status:scene.status, workflowStage:scene.workflowStage, duration:scene.duration, flags:scene.flags||[] }; return acc; }, {}), generated_at:new Date().toISOString() };
+      const hyperframesJson = {
+        project_id: state.project.storyboardId,
+        render_mode: 'still-image-motion',
+        aspect_ratio: state.project.aspectRatio,
+        fps,
+        shots: state.scenes.map(scene=>({ shot_id:scene.id, order:scene.order, start_sec:scene.start, duration_sec:scene.duration, image_url:scene.assetUrl, motion:scene.motionPreset, transition:scene.transition, caption:scene.captionText, notes:scene.promptNote, stage:scene.workflowStage, status:scene.status, flags:scene.flags||[] }))
+      };
+      const remotionJson = {
+        compositionId: state.project.storyboardId,
+        fps,
+        width,
+        height,
+        durationInFrames: Math.round(total * fps),
+        scenes: state.scenes.map(scene=>({ id:scene.id, from:Math.round(scene.start*fps), durationInFrames:Math.round(scene.duration*fps), assetUrl:scene.assetUrl, motionPreset:scene.motionPreset, transition:scene.transition, captionText:scene.captionText, promptNote:scene.promptNote, status:scene.status }))
+      };
+      const openMontageJson = {
+        project_id: state.project.storyboardId,
+        mode: 'openmontage-handoff',
+        brief: state.montageBrief,
+        workflow_stage: state.project.workflowStage,
+        assets: state.assets,
+        scenes: state.scenes.map(scene=>({ id:scene.id, title:scene.title, sequence:scene.order, approved_asset_url:scene.assetUrl, duration_sec:scene.duration, transition:scene.transition, motion_hint:scene.motionPreset, caption_text:scene.captionText, prompt_note:scene.promptNote, stage:scene.workflowStage, status:scene.status, generate_missing_assets: scene.status==='raw' || scene.flags?.includes('needs-reframe') }))
+      };
+      const sceneFiles = state.scenes.map(scene=>({ fileName:`${scene.id}.json`, path:`scenes/${scene.id}.json`, data:{ ...scene, task_refs:{ run_id:state.project.runContext.runId || null, task_id:state.project.runContext.taskId || null }, export_targets:{ remotion:`${scene.id}.tsx`, hyperframes:`${scene.id}.json`, openmontage:`${scene.id}.handoff.json` } } }));
+      const statusMd = `# STATUS\n\nProject: ${state.project.title}\nStoryboard ID: ${state.project.storyboardId}\nWorkflow stage: ${state.project.workflowStage}\nExport mode: ${state.exportMode}\nRun ID: ${state.project.runContext.runId || 'pending'}\nTask ID: ${state.project.runContext.taskId || 'pending'}\nLast updated: ${new Date().toISOString()}\n\n## Current state\n- Total scenes: ${state.scenes.length}\n- Total assets: ${state.assets.length}\n- Total duration: ${total} seconds\n- Aspect: ${state.project.aspectRatio}\n\n## Scene statuses\n${state.scenes.map(scene => `- ${scene.id}: ${scene.title} -> ${scene.status} / ${scene.workflowStage}`).join('\n')}\n`;
+      const agentsMd = `# AGENTS\n\n## Contract\n- Read STATUS.md before making changes.\n- Preserve JSON validity in project.json, assets.json, status.json, and scenes/*.json.\n- Append one line to activity.md when work is completed.\n\n## Topline flow\n1. Plan scenes.\n2. Approve scenes and assets.\n3. Export to the selected mode.\n4. Render or hand off.\n5. Review output.\n6. Publish or archive.\n\n## Export targets\n- HyperFrames: use hyperframes.config.json for direct render-oriented workflows.\n- OpenMontage: use openmontage.handoff.json plus scenes/*.json as the production handoff bundle.\n- Generic bundle: use project.json, assets.json, status.json, and markdown files for agent routing.\n`;
+      const activityMd = `# activity\n\n- ${new Date().toISOString()} | workflow-ui | Topline storyboard workflow bundle created.\n`;
+      const workflowMd = `# README-workflow\n\nThis bundle acts as a control layer for storyboard-first video production.\n\n## Stages\n- Plan\n- Approve\n- Export\n- Render\n- Review\n- Publish\n\n## Export modes\n- HyperFrames for direct composition/render work.\n- OpenMontage for agentic full-pipeline handoff.\n- Generic bundle for repo-based or agent-based workflows.\n`;
+      return { projectJson, assetsJson, statusJson, hyperframesJson, remotionJson, openMontageJson, sceneFiles, statusMd, agentsMd, activityMd, workflowMd };
+    }
+
+    function buildExportJson(){ const bundle=buildBundleData(); if(state.exportMode==='hyperframes') return { storyboard:bundle.projectJson, hyperframes:bundle.hyperframesJson, remotion:bundle.remotionJson, mission_control:bundle.projectJson.mission_control }; if(state.exportMode==='openmontage') return { storyboard:bundle.projectJson, openmontage:bundle.openMontageJson, mission_control:bundle.projectJson.mission_control }; return { storyboard:bundle.projectJson, assets:bundle.assetsJson, status:bundle.statusJson, mission_control:bundle.projectJson.mission_control }; }
+    function downloadJSON(filename,obj){ const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+    function saveLocal(){ localStorage.setItem('storyboard-topline-state', JSON.stringify(state)); }
+    function loadLocal(){ const raw=localStorage.getItem('storyboard-topline-state'); if(!raw) return; state=JSON.parse(raw); renderAll(); }
+    async function exportZip(kind){ const bundle=buildBundleData(); const zip = new JSZip(); zip.file('STATUS.md',bundle.statusMd); zip.file('AGENTS.md',bundle.agentsMd); zip.file('activity.md',bundle.activityMd); zip.file('README-workflow.md',bundle.workflowMd); zip.file('project.json', JSON.stringify(bundle.projectJson,null,2)); zip.file('assets.json', JSON.stringify(bundle.assetsJson,null,2)); zip.file('status.json', JSON.stringify(bundle.statusJson,null,2)); if(kind==='hyperframes'){ zip.file('hyperframes.config.json', JSON.stringify(bundle.hyperframesJson,null,2)); zip.file('remotion.config.json', JSON.stringify(bundle.remotionJson,null,2)); } if(kind==='openmontage'){ zip.file('openmontage.handoff.json', JSON.stringify(bundle.openMontageJson,null,2)); } const scenesFolder=zip.folder('scenes'); bundle.sceneFiles.forEach(file=>scenesFolder.file(file.fileName, JSON.stringify(file.data,null,2))); const blob=await zip.generateAsync({type:'blob'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${state.project.storyboardId}-${kind}.zip`; a.click(); URL.revokeObjectURL(a.href); }
+
+    function renderWorkflowBar(){ const bar=q('workflowBar'); bar.innerHTML=''; state.workflowStages.forEach(stage=>{ const btn=document.createElement('button'); const currentIndex=state.workflowStages.indexOf(state.project.workflowStage); const stageIndex=state.workflowStages.indexOf(stage); btn.className='workflow-step'+(stage===state.project.workflowStage?' active':'')+(stageIndex<currentIndex?' done':''); btn.innerHTML=`<span class="step-meta"><strong style="font-size:var(--text-sm)">${stage}</strong><small>${stage===state.project.workflowStage?'Current stage':'Click to switch'}</small></span><i data-lucide="${stageIndex<currentIndex?'check-circle-2':stage===state.project.workflowStage?'play-circle':'circle'}"></i>`; btn.addEventListener('click',()=>{ state.project.workflowStage=stage; renderAll(); }); bar.appendChild(btn); }); }
+    function renderBundleTree(){ const tree=q('bundleTree'); tree.innerHTML=''; const files=['STATUS.md','AGENTS.md','activity.md','README-workflow.md','project.json','assets.json','status.json']; if(state.exportMode==='hyperframes') files.push('hyperframes.config.json','remotion.config.json'); if(state.exportMode==='openmontage') files.push('openmontage.handoff.json'); state.scenes.forEach(scene=>files.push(`scenes/${scene.id}.json`)); files.forEach(path=>{ const row=document.createElement('div'); row.className='file-row'; row.innerHTML=`<span>${path}</span><span class="faint">file</span>`; tree.appendChild(row); }); }
+    function renderPreview(){ const scene=getSelectedScene(); q('previewSceneCode').textContent=`Scene ${String(scene.order).padStart(2,'0')}`; q('previewTitle').textContent=scene.title; q('previewImage').src=scene.assetUrl; q('durationBadge').textContent=`${scene.duration.toFixed(1)}s`; q('motionBadge').textContent=scene.motionPreset; q('sceneStatusBadge').textContent=scene.status; q('workflowStageBadge').textContent=scene.workflowStage || state.project.workflowStage; q('inspectorSceneCode').textContent=`Scene ${String(scene.order).padStart(2,'0')}`; }
+    function renderSceneList(){ const wrap=q('sceneStack'); wrap.innerHTML=''; state.scenes.forEach(scene=>{ const btn=document.createElement('button'); btn.className='scene-card'+(scene.id===state.selectedSceneId?' active':''); btn.draggable=true; btn.dataset.sceneId=scene.id; btn.innerHTML=`<div class="thumb"><img src="${scene.assetUrl}" alt="${scene.title}" width="400" height="225"></div><div class="stack" style="min-width:0"><div style="font-weight:800">${String(scene.order).padStart(2,'0')}. ${scene.title}</div><div class="muted">${scene.duration.toFixed(1)}s, ${scene.motionPreset}, ${scene.transition}</div><div class="row"><span class="pill">${formatTime(scene.start)} - ${formatTime(scene.start+scene.duration)}</span><span class="pill">${scene.status}</span><span class="pill">${scene.workflowStage}</span></div></div>`; btn.addEventListener('click',()=>{state.selectedSceneId=scene.id; renderAll();}); btn.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain', scene.id); }); btn.addEventListener('dragover',e=>e.preventDefault()); btn.addEventListener('drop',e=>{ e.preventDefault(); reorderScenes(e.dataTransfer.getData('text/plain'), scene.id); }); wrap.appendChild(btn); }); }
+    function renderAssets(){ const wrap=q('assetStack'); wrap.innerHTML=''; q('assetCountLabel').textContent=`${state.assets.length} assets`; state.assets.forEach(asset=>{ const row=document.createElement('button'); row.className='asset-row'+(asset.id===state.selectedAssetId?' active':''); row.innerHTML=`<span>${asset.title}</span><span class="faint">${asset.kind}</span>`; row.addEventListener('click',()=>{state.selectedAssetId=asset.id; renderAll();}); wrap.appendChild(row); }); }
+    function renderInspector(){ const scene=getSelectedScene(); q('shotNameInput').value=scene.title; q('assetUrlInput').value=scene.assetUrl; q('durationInput').value=scene.duration; q('transitionInput').value=scene.transition; q('motionInput').value=scene.motionPreset; q('statusInput').value=scene.status; q('workflowStageInput').value=scene.workflowStage || state.project.workflowStage; q('aspectInput').value=state.project.aspectRatio; q('notesInput').value=scene.promptNote || ''; q('captionInput').value=scene.captionText || ''; q('montageBriefInput').value=state.montageBrief; }
+    function renderTimeRuler(){ const total=Math.ceil(totalDuration())+6; const wrap=q('timeRuler'); wrap.innerHTML=''; for(let i=0;i<=total;i++){ const d=document.createElement('div'); d.textContent=formatTime(i).replace('.0',''); wrap.appendChild(d); } }
+    function clipHTML(scene,type){ const left=scene.start*state.project.pxPerSecond; const width=Math.max(58,scene.duration*state.project.pxPerSecond); return `<div class="clip ${type}" data-scene-id="${scene.id}" style="left:${left}px;width:${width}px">${type==='scene'?'<span class="resize left"></span>':''}<span>${type==='scene'?scene.title:type==='motion'?scene.motionPreset:type==='text'?(scene.captionText?'Caption':'No text'):'Audio bed'}</span><span>${scene.duration.toFixed(1)}s</span>${type==='scene'?'<span class="resize right"></span>':''}</div>`; }
+    function renderTimeline(){ renderTimeRuler(); q('sceneTrack').innerHTML=state.scenes.map(scene=>clipHTML(scene,'scene')).join(''); q('motionTrack').innerHTML=state.scenes.map(scene=>clipHTML(scene,'motion')).join(''); q('textTrack').innerHTML=state.scenes.map(scene=>clipHTML(scene,'text')).join(''); q('audioTrack').innerHTML=state.scenes.map(scene=>clipHTML(scene,'audio')).join(''); bindClipResize(); }
+    function renderJson(){ q('projectJsonBox').value = JSON.stringify(buildExportJson(), null, 2); q('jsonModeLabel').textContent = state.exportMode==='hyperframes'?'HyperFrames':state.exportMode==='openmontage'?'OpenMontage':'Generic bundle'; }
+    function renderMission(){ q('runInfo').textContent = state.project.runContext.runId || 'pending'; q('taskInfo').textContent = state.project.runContext.taskId || 'pending'; q('linkInfo').textContent = buildMissionLink(); q('missionStatus').textContent = `Current mode: ${state.exportMode}. Current stage: ${state.project.workflowStage}.`; }
+    function renderModes(){ document.querySelectorAll('.mode-tab').forEach(btn=>{ btn.classList.toggle('active', btn.dataset.mode===state.exportMode); }); q('modeHelp').textContent = state.exportMode==='hyperframes' ? 'HyperFrames mode exports composition-style render configs.' : state.exportMode==='openmontage' ? 'OpenMontage mode exports a richer production handoff bundle.' : 'Generic bundle mode exports a workflow-first package for agents.'; }
+    function renderAll(){ recalcStarts(); syncAssetRefs(); renderWorkflowBar(); renderPreview(); renderSceneList(); renderAssets(); renderInspector(); renderTimeline(); renderJson(); renderMission(); renderModes(); renderBundleTree(); if(window.lucide) lucide.createIcons(); }
+
+    function reorderScenes(draggedId,targetId){ if(!draggedId || draggedId===targetId) return; const from=state.scenes.findIndex(s=>s.id===draggedId); const to=state.scenes.findIndex(s=>s.id===targetId); if(from<0||to<0) return; const [moved]=state.scenes.splice(from,1); state.scenes.splice(to,0,moved); renderAll(); }
+    function updateSelectedScene(patch){ const scene=getSelectedScene(); Object.assign(scene, patch); scene.lifecycle = scene.lifecycle || {}; scene.lifecycle.updatedAt = new Date().toISOString(); renderAll(); }
+    function addScene(){ const asset=getSelectedAsset(); const id=`scene-${String(state.scenes.length+1).padStart(2,'0')}`; state.scenes.push({ id, order:state.scenes.length+1, title:`New scene ${state.scenes.length+1}`, assetId:asset?.id||'', assetUrl:asset?.url||'https://picsum.photos/seed/new-scene/600/338', duration:3.0, start:totalDuration(), transition:'fade', motionPreset:'zoom-in', status:'raw', workflowStage:state.project.workflowStage, promptNote:'Replace with shot notes.', captionText:'', flags:[], lifecycle:{createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()} }); state.selectedSceneId=id; renderAll(); }
+    function duplicateScene(){ const scene=getSelectedScene(); const clone=JSON.parse(JSON.stringify(scene)); clone.id=`scene-${Date.now()}`; clone.title=scene.title+' copy'; clone.status='raw'; clone.workflowStage=state.project.workflowStage; clone.flags=[]; clone.lifecycle={createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()}; const idx=state.scenes.findIndex(s=>s.id===scene.id); state.scenes.splice(idx+1,0,clone); state.selectedSceneId=clone.id; renderAll(); }
+    function addAsset(){ const url=q('newAssetUrl').value.trim(); const title=q('newAssetTitle').value.trim(); const kind=q('newAssetKind').value; if(!url||!title) return; const id=`asset-${Date.now()}`; state.assets.unshift({id,title,kind,url}); state.selectedAssetId=id; q('newAssetUrl').value=''; q('newAssetTitle').value=''; renderAll(); }
+    function assignAsset(){ const asset=getSelectedAsset(); if(!asset) return; updateSelectedScene({ assetId:asset.id, assetUrl:asset.url }); }
+    function bindClipResize(){ document.querySelectorAll('.clip.scene').forEach(el=>{ const id=el.dataset.sceneId; el.addEventListener('click',()=>{state.selectedSceneId=id; renderAll();}); const scene=()=>state.scenes.find(s=>s.id===id); const beginResize=(side,ev)=>{ ev.preventDefault(); ev.stopPropagation(); const startX=ev.clientX; const initialDuration=Number(scene().duration); const initialStart=Number(scene().start); const onMove=e=>{ const delta=(e.clientX-startX)/state.project.pxPerSecond; if(side==='right'){ scene().duration=Math.max(.5, Number((initialDuration+delta).toFixed(2))); } else { const newStart=Math.max(0, initialStart+delta); const diff=initialStart-newStart; scene().duration=Math.max(.5, Number((initialDuration+diff).toFixed(2))); } renderAll(); }; const onUp=()=>{ window.removeEventListener('pointermove',onMove); window.removeEventListener('pointerup',onUp); renderAll(); }; window.addEventListener('pointermove',onMove); window.addEventListener('pointerup',onUp); }; el.querySelector('.resize.left').addEventListener('pointerdown',e=>beginResize('left',e)); el.querySelector('.resize.right').addEventListener('pointerdown',e=>beginResize('right',e)); }); }
+    function loadMissionParams(){ const params=new URLSearchParams(window.location.search); const runId=params.get('runId')||''; const taskId=params.get('taskId')||''; const storyboardId=params.get('storyboardId')||''; if(runId||taskId||storyboardId){ state.project.runContext={runId,taskId,source:'mission-control-link'}; if(storyboardId) state.project.storyboardId=storyboardId; } }
+    function toggleTheme(){ const root=document.documentElement; root.setAttribute('data-theme', root.getAttribute('data-theme')==='dark'?'light':'dark'); if(window.lucide) lucide.createIcons(); }
+
+    q('addSceneBtn').addEventListener('click',addScene); q('duplicateSceneBtn').addEventListener('click',duplicateScene); q('flagSceneBtn').addEventListener('click',()=>updateSelectedScene({ status:'flagged', flags:['manual-flag'] })); q('saveLocalBtn').addEventListener('click',saveLocal); q('loadLocalBtn').addEventListener('click',loadLocal); q('themeBtn').addEventListener('click',toggleTheme);
+    q('addAssetBtn').addEventListener('click',addAsset); q('assignAssetBtn').addEventListener('click',assignAsset); q('markReadyBtn').addEventListener('click',()=>updateSelectedScene({ status:'ready' })); q('markApprovedBtn').addEventListener('click',()=>updateSelectedScene({ status:'approved' })); q('markExportedBtn').addEventListener('click',()=>updateSelectedScene({ status:'exported' }));
+    q('exportJsonBtn').addEventListener('click',()=>downloadJSON(`${state.project.storyboardId}-${state.exportMode}.json`, buildExportJson())); q('exportHyperBtn').addEventListener('click',()=>{ state.exportMode='hyperframes'; renderAll(); exportZip('hyperframes'); }); q('exportMontageBtn').addEventListener('click',()=>{ state.exportMode='openmontage'; renderAll(); exportZip('openmontage'); });
+    q('importJsonBtn').addEventListener('click',()=>q('jsonFileInput').click()); q('jsonFileInput').addEventListener('change', async (e)=>{ const file=e.target.files?.[0]; if(!file) return; const text=await file.text(); try{ const parsed=JSON.parse(text); if(parsed.storyboard){ state.project.storyboardId=parsed.storyboard.id||state.project.storyboardId; state.project.title=parsed.storyboard.title||state.project.title; if(parsed.storyboard.aspect_ratio) state.project.aspectRatio=parsed.storyboard.aspect_ratio; if(parsed.storyboard.workflow_stage) state.project.workflowStage=parsed.storyboard.workflow_stage; if(parsed.storyboard.output_mode) state.exportMode=parsed.storyboard.output_mode; if(parsed.assets?.assets) state.assets=parsed.assets.assets; if(parsed.openmontage?.assets) state.assets=parsed.openmontage.assets; if(parsed.hyperframes?.shots){ state.scenes=parsed.hyperframes.shots.map((shot,i)=>({ id:shot.shot_id||`scene-${i+1}`, order:i+1, title:shot.title||`Scene ${i+1}`, assetId:'', assetUrl:shot.image_url, duration:shot.duration_sec, start:shot.start_sec||0, transition:shot.transition||'fade', motionPreset:shot.motion||'static', status:shot.status||'raw', workflowStage:shot.stage||state.project.workflowStage, promptNote:shot.notes||'', captionText:shot.caption||'', flags:shot.flags||[], lifecycle:{createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()} })); } state.selectedSceneId=state.scenes[0]?.id||''; renderAll(); } }catch(err){ alert('Invalid JSON file.'); } e.target.value=''; });
+    q('refreshJsonBtn').addEventListener('click',renderJson); q('applyJsonBtn').addEventListener('click',()=>{ try{ const parsed=JSON.parse(q('projectJsonBox').value); if(parsed.storyboard){ if(parsed.storyboard.workflow_stage) state.project.workflowStage=parsed.storyboard.workflow_stage; if(parsed.storyboard.output_mode) state.exportMode=parsed.storyboard.output_mode; renderAll(); } }catch(err){ alert('Invalid project JSON.'); } });
+    q('zoomInBtn').addEventListener('click',()=>{ state.project.pxPerSecond=Math.min(120,state.project.pxPerSecond+8); renderAll(); }); q('zoomOutBtn').addEventListener('click',()=>{ state.project.pxPerSecond=Math.max(28,state.project.pxPerSecond-8); renderAll(); });
+    document.querySelectorAll('.mode-tab').forEach(btn=>btn.addEventListener('click',()=>{ state.exportMode=btn.dataset.mode; renderAll(); }));
+    [['shotNameInput','title'],['assetUrlInput','assetUrl'],['transitionInput','transition'],['motionInput','motionPreset'],['statusInput','status'],['workflowStageInput','workflowStage'],['notesInput','promptNote'],['captionInput','captionText']].forEach(([id,key])=>{ q(id).addEventListener('input',e=>updateSelectedScene({ [key]:e.target.value })); q(id).addEventListener('change',e=>updateSelectedScene({ [key]:e.target.value })); }); q('durationInput').addEventListener('input',e=>updateSelectedScene({ duration:Math.max(.5, Number(e.target.value||.5)) })); q('aspectInput').addEventListener('change',e=>{ state.project.aspectRatio=e.target.value; renderAll(); }); q('workflowStageInput').addEventListener('change',e=>{ updateSelectedScene({ workflowStage:e.target.value }); }); q('montageBriefInput').addEventListener('input',e=>{ state.montageBrief=e.target.value; });
+    document.addEventListener('keydown',e=>{ if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return; if(e.key.toLowerCase()==='d') duplicateScene(); if(e.key.toLowerCase()==='f') updateSelectedScene({ status:'flagged', flags:['shortcut-flag'] }); if(e.key.toLowerCase()==='s'){ e.preventDefault(); saveLocal(); } });
+
+    loadMissionParams(); recalcStarts(); renderAll(); if(window.lucide) lucide.createIcons();
+  </script>
+</body>
+</html>

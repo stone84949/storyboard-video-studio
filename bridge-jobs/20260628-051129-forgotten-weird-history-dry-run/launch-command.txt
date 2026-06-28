@@ -1,0 +1,1 @@
+DRY RUN only for short-shorts: python scripts/storyboard_to_config.py bridge-jobs\20260628-051129-forgotten-weird-history-dry-run/project.json --target short-shorts

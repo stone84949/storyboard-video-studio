@@ -1,0 +1,21 @@
+{
+  "index": 1,
+  "id": "scene-01",
+  "title": "Cold open visual",
+  "assetUrl": "https://picsum.photos/seed/story-scene1/1080/1920",
+  "duration": 3.2,
+  "start": 0,
+  "transition": "fade",
+  "motionPreset": "zoom-in",
+  "status": "raw",
+  "assetState": "approved",
+  "captionMode": "center-title",
+  "notes": "Fast hook frame with dark center-safe composition.",
+  "narration": "This is where the story opens with a strong visual hook.",
+  "voStart": 0,
+  "voEnd": 2.9,
+  "order": 1,
+  "asset": "https://picsum.photos/seed/story-scene1/1080/1920",
+  "motion": "zoom-in",
+  "vo_seconds": 3.2
+}

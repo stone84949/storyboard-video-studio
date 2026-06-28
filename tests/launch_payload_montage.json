@@ -1,0 +1,17 @@
+{
+  "machine": "BEAST",
+  "engine": "storyboard-ui",
+  "run_label": "montage dry run",
+  "execute": false,
+  "payload": {
+    "project_title": "Montage Dry Run",
+    "pipeline_target": "montage",
+    "aspect_ratio": "9:16",
+    "target_duration_seconds": 42,
+    "scenes": [
+      {"id": "scene-001", "title": "Image sequence A", "narration": "Start with the exterior, then move into the evidence board.", "duration": 7, "vo_seconds": 4.1, "asset": "sequence-a/*.jpg", "motion": "crossfade plus slow push in", "notes": "Editor can choose best three stills."},
+      {"id": "scene-002", "title": "Map movement", "narration": "Trace the route from the main road to the abandoned site.", "duration": 8, "vo_seconds": 4.4, "asset": "map-route.png", "motion": "animated crop from west to east", "notes": "Resolve or Shotcut finishing."},
+      {"id": "scene-003", "title": "Document stack", "narration": "Layer the clipping, ledger, and handwritten note in sequence.", "duration": 9, "vo_seconds": 4.5, "asset": "documents/*.jpg", "motion": "stacked still montage with dissolves", "notes": "Keep readable at mobile size."}
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "index": 1,
+  "id": "scene-001",
+  "title": "Image sequence A",
+  "narration": "Start with the exterior, then move into the evidence board.",
+  "duration": 7,
+  "vo_seconds": 4.1,
+  "asset": "sequence-a/*.jpg",
+  "motion": "crossfade plus slow push in",
+  "notes": "Editor can choose best three stills."
+}

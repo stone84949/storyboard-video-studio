@@ -1,0 +1,10 @@
+{
+  "index": 3,
+  "id": "scene-003",
+  "title": "Archive",
+  "narration": "A county ledger mentions the place only once.",
+  "duration": 7,
+  "vo_seconds": 3.2,
+  "asset": "ledger.jpg",
+  "motion": "slow tilt down"
+}

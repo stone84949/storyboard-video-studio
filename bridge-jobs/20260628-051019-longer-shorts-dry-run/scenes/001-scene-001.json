@@ -1,0 +1,10 @@
+{
+  "index": 1,
+  "id": "scene-001",
+  "title": "Cold open",
+  "narration": "The first clue looks like a normal newspaper clipping.",
+  "duration": 6,
+  "vo_seconds": 3.8,
+  "asset": "clipping.jpg",
+  "motion": "slow push in"
+}

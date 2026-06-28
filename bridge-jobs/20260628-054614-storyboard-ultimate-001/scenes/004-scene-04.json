@@ -1,0 +1,21 @@
+{
+  "index": 4,
+  "id": "scene-04",
+  "title": "CTA end frame",
+  "assetUrl": "https://picsum.photos/seed/story-scene4/1080/1920",
+  "duration": 3.6,
+  "start": 13.1,
+  "transition": "slide",
+  "motionPreset": "static",
+  "status": "approved",
+  "assetState": "approved",
+  "captionMode": "center-title",
+  "notes": "End card can accept final branded image swap.",
+  "narration": "Finish with the call to action and clear next step.",
+  "voStart": 13.3,
+  "voEnd": 16.2,
+  "order": 4,
+  "asset": "https://picsum.photos/seed/story-scene4/1080/1920",
+  "motion": "static",
+  "vo_seconds": 3.6
+}

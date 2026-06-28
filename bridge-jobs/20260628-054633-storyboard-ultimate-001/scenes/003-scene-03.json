@@ -1,0 +1,21 @@
+{
+  "index": 3,
+  "id": "scene-03",
+  "title": "Main proof visual",
+  "assetUrl": "https://picsum.photos/seed/story-scene3/1080/1920",
+  "duration": 5.1,
+  "start": 8,
+  "transition": "fade",
+  "motionPreset": "pan-left-right",
+  "status": "approved",
+  "assetState": "approved",
+  "captionMode": "lower-third",
+  "notes": "Use as proof frame with product/service focus.",
+  "narration": "Now we move into the main proof point and visual evidence.",
+  "voStart": 8.1,
+  "voEnd": 12.4,
+  "order": 3,
+  "asset": "https://picsum.photos/seed/story-scene3/1080/1920",
+  "motion": "pan-left-right",
+  "vo_seconds": 5.1
+}

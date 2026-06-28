@@ -1,0 +1,10 @@
+{
+  "index": 3,
+  "id": "scene-003",
+  "title": "Payoff",
+  "narration": "It pointed to a place erased from the map.",
+  "duration": 5,
+  "vo_seconds": 3.4,
+  "asset": "old-map.jpg",
+  "motion": "slow zoom out"
+}

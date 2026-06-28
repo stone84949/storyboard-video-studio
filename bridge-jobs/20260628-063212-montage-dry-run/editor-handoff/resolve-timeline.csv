@@ -1,0 +1,4 @@
+index,scene_id,title,start_seconds,end_seconds,duration_seconds,asset,asset_state,transition,motion,caption_mode,narration,notes
+1,scene-001,Image sequence A,0.0,7.0,7.0,sequence-a/*.jpg,candidate,crossfade,crossfade plus slow push in,lower-third,"Start with the exterior, then move into the evidence board.",Editor can choose best three stills.
+2,scene-002,Map movement,7.0,15.0,8.0,map-route.png,candidate,crossfade,animated crop from west to east,lower-third,Trace the route from the main road to the abandoned site.,Resolve or Shotcut finishing.
+3,scene-003,Document stack,15.0,24.0,9.0,documents/*.jpg,candidate,crossfade,stacked still montage with dissolves,lower-third,"Layer the clipping, ledger, and handwritten note in sequence.",Keep readable at mobile size.

@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "target": "short-shorts",
+  "quality": "draft",
+  "fps": 30,
+  "output": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-060834-codex-live-render-smoke\\exports\\final.mp4",
+  "workspace": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-060834-codex-live-render-smoke\\hyperframes",
+  "log": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-060834-codex-live-render-smoke\\logs\\hyperframes-render.log"
+}

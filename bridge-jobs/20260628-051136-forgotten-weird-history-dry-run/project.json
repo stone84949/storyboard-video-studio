@@ -1,0 +1,67 @@
+{
+  "job_id": "20260628-051136-forgotten-weird-history-dry-run",
+  "created_at": "2026-06-28T09:11:36.942148+00:00",
+  "machine": "BEAST",
+  "engine": "storyboard-ui",
+  "run_label": "Forgotten Weird History Dry Run",
+  "execute_requested": true,
+  "live_execution_enabled": false,
+  "pipeline_target": "short-shorts",
+  "aspect_ratio": "9:16",
+  "project_title": "Forgotten Weird History Dry Run",
+  "payload": {
+    "schema_version": "storyboard-video-studio/v1",
+    "project_title": "Forgotten Weird History Dry Run",
+    "machine": "BEAST",
+    "engine": "storyboard-bridge",
+    "pipeline_target": "short-shorts",
+    "aspect_ratio": "9:16",
+    "style": "still-image vertical 9:16, slow Ken Burns, documentary mystery",
+    "target_duration_seconds": 12,
+    "scenes": [
+      {
+        "title": "Hook",
+        "asset": "archive-mystery-01.jpg",
+        "narration": "A forgotten mystery starts with one strange image in the archive.",
+        "duration": 3.5,
+        "vo_seconds": 3,
+        "motion": "slow push in",
+        "notes": "",
+        "id": "scene-001"
+      },
+      {
+        "title": "Context",
+        "asset": "old-map.jpg",
+        "narration": "The trail leads through a place most people have never heard of.",
+        "duration": 4.2,
+        "vo_seconds": 3,
+        "motion": "slow pan left",
+        "notes": "",
+        "id": "scene-002"
+      },
+      {
+        "title": "Payoff",
+        "asset": "newspaper-clipping.jpg",
+        "narration": "And the final clue changes the story completely.",
+        "duration": 3.8,
+        "vo_seconds": 3,
+        "motion": "slow push in",
+        "notes": "",
+        "id": "scene-003"
+      }
+    ],
+    "validation": {
+      "ok": true,
+      "errors": [],
+      "warnings": []
+    },
+    "created_at": "2026-06-28T09:11:36.937Z"
+  },
+  "folders": {
+    "storyboard": "storyboard/",
+    "scenes": "scenes/",
+    "exports": "exports/",
+    "editor_handoff": "editor-handoff/",
+    "logs": "logs/"
+  }
+}

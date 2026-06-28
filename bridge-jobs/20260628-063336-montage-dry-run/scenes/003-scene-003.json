@@ -1,0 +1,11 @@
+{
+  "index": 3,
+  "id": "scene-003",
+  "title": "Document stack",
+  "narration": "Layer the clipping, ledger, and handwritten note in sequence.",
+  "duration": 9,
+  "vo_seconds": 4.5,
+  "asset": "documents/*.jpg",
+  "motion": "stacked still montage with dissolves",
+  "notes": "Keep readable at mobile size."
+}

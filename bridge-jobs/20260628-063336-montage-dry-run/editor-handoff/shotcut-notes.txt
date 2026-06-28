@@ -1,0 +1,8 @@
+Shotcut / Resolve assembly notes for Montage Dry Run
+
+Import assets in scene order. Use the resolve-timeline.csv for timing.
+Treat rows with asset_state=needs-image or empty asset as replacement targets before final render.
+
+0.0-7.0s | Image sequence A | crossfade | crossfade plus slow push in | sequence-a/*.jpg
+7.0-15.0s | Map movement | crossfade | animated crop from west to east | map-route.png
+15.0-24.0s | Document stack | crossfade | stacked still montage with dissolves | documents/*.jpg

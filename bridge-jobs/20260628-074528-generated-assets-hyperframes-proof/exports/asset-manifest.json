@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "project": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-074528-generated-assets-hyperframes-proof\\project.json",
+  "provider_requested": "grok",
+  "provider_used": "grok",
+  "fallback_enabled": true,
+  "assets": [
+    {
+      "scene_id": "scene-001",
+      "title": "Forgotten archive door",
+      "prompt": "Forgotten archive door. A sealed archive door waits in the dark.. cinematic weird forgotten history, rich archival mood. vertical 9:16 cinematic frame, documentary explainer still, no legible text, strong subject separation",
+      "provider": "local-svg",
+      "source_asset": "",
+      "status": "local-generated",
+      "asset": "assets\\images\\materialized\\001-scene-001.svg",
+      "notes": "grok failed: {\"success\": false, \"error\": \"Grok image generation failed: 400 Client Error: Bad Request for url: https://api.x.ai/v1/images/generations\", \"data\": {}}"
+    },
+    {
+      "scene_id": "scene-002",
+      "title": "Evidence board reveal",
+      "prompt": "Evidence board reveal. The first clue appears on the evidence board.. cinematic weird forgotten history, rich archival mood. vertical 9:16 cinematic frame, documentary explainer still, no legible text, strong subject separation",
+      "provider": "local-svg",
+      "source_asset": "",
+      "status": "local-generated",
+      "asset": "assets\\images\\materialized\\002-scene-002.svg",
+      "notes": "grok failed: {\"success\": false, \"error\": \"Grok image generation failed: 400 Client Error: Bad Request for url: https://api.x.ai/v1/images/generations\", \"data\": {}}"
+    },
+    {
+      "scene_id": "scene-003",
+      "title": "Final unanswered question",
+      "prompt": "Final unanswered question. The mystery ends with one unanswered question.. cinematic weird forgotten history, rich archival mood. vertical 9:16 cinematic frame, documentary explainer still, no legible text, strong subject separation",
+      "provider": "local-svg",
+      "source_asset": "",
+      "status": "local-generated",
+      "asset": "assets\\images\\materialized\\003-scene-003.svg",
+      "notes": "grok failed: {\"success\": false, \"error\": \"Grok image generation failed: 400 Client Error: Bad Request for url: https://api.x.ai/v1/images/generations\", \"data\": {}}"
+    }
+  ]
+}

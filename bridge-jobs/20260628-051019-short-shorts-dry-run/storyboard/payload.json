@@ -1,0 +1,35 @@
+{
+  "project_title": "Short Shorts Dry Run",
+  "pipeline_target": "short-shorts",
+  "aspect_ratio": "9:16",
+  "target_duration_seconds": 18,
+  "scenes": [
+    {
+      "id": "scene-001",
+      "title": "Hook",
+      "narration": "A strange photo appeared in the old archive.",
+      "duration": 4,
+      "vo_seconds": 3.2,
+      "asset": "archive-photo.jpg",
+      "motion": "slow push in"
+    },
+    {
+      "id": "scene-002",
+      "title": "Twist",
+      "narration": "The date on the back made no sense.",
+      "duration": 5,
+      "vo_seconds": 3,
+      "asset": "photo-back.jpg",
+      "motion": "slow pan right"
+    },
+    {
+      "id": "scene-003",
+      "title": "Payoff",
+      "narration": "It pointed to a place erased from the map.",
+      "duration": 5,
+      "vo_seconds": 3.4,
+      "asset": "old-map.jpg",
+      "motion": "slow zoom out"
+    }
+  ]
+}

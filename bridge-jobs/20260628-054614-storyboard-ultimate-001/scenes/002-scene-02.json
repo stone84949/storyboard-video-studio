@@ -1,0 +1,21 @@
+{
+  "index": 2,
+  "id": "scene-02",
+  "title": "Problem setup",
+  "assetUrl": "https://picsum.photos/seed/story-scene2/1080/1920",
+  "duration": 4.8,
+  "start": 3.2,
+  "transition": "cut",
+  "motionPreset": "pan-right-left",
+  "status": "approved",
+  "assetState": "approved",
+  "captionMode": "lower-third",
+  "notes": "Leave space on right side for captions.",
+  "narration": "Here we frame the problem and introduce the core tension.",
+  "voStart": 3.3,
+  "voEnd": 7.4,
+  "order": 2,
+  "asset": "https://picsum.photos/seed/story-scene2/1080/1920",
+  "motion": "pan-right-left",
+  "vo_seconds": 4.8
+}

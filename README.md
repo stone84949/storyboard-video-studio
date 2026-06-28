@@ -26,11 +26,124 @@ docs/
 prototype/
   Raw downloaded prototype files, preserved for reference
 scripts/
+  studio_paths.py                    Validates shared local repo/output paths
   storyboard_to_config.py            Current prototype converter
+  render_hyperframes_job.py          First live HyperFrames finish-layer renderer
+  hermes-bridge.ps1                  Shared Hermes CLI wrapper
+  hermes-producer-brief.ps1          Producer / storyboard prompt wrapper
+  hermes-asset-research-plan.ps1     Asset Researcher planning wrapper
+  hermes-open-design-template-review.ps1  Open Design template-review wrapper
 templates/
   storyboards/
     basic-storyboard.csv             Starting CSV storyboard template
 ```
+
+## Hermes Bridge Wrappers
+
+These wrappers let the repo control the prompt contract while Hermes handles the
+actual agent work from inside `C:\Workspace\Repos\storyboard-video-studio`.
+
+## Storyboard Control Layer
+
+The primary local storyboard UI is the Ultimate Workflow console:
+
+```text
+storyboard/index.html
+```
+
+Run the safe local bridge, then serve the UI:
+
+```bat
+start-bridge.bat
+python -m http.server 8128 --bind 127.0.0.1 --directory storyboard
+```
+
+Open:
+
+```text
+http://127.0.0.1:8128/
+```
+
+The UI validates scenes, estimates VO timing, fits durations, exports bundles,
+exports editor handoffs, and sends jobs to `POST /api/launch` on the bridge.
+Bridge jobs are written under `bridge-jobs/` as markdown/json folders. For
+`short-shorts` and `longer-shorts`, live mode renders a draft HyperFrames MP4 to
+`exports/final.mp4`. Live command execution is disabled unless
+`STORYBOARD_BRIDGE_LIVE=1` is set before starting the bridge.
+
+First live render command shape:
+
+```bat
+python scripts/render_hyperframes_job.py bridge-jobs/<job-id>/project.json --target short-shorts --quality draft
+```
+
+See:
+
+- [STATUS.md](STATUS.md)
+- [PIPELINE_MAP.md](PIPELINE_MAP.md)
+- [TEST_RESULTS.md](TEST_RESULTS.md)
+- [NEXT_ACTIONS.md](NEXT_ACTIONS.md)
+
+## Connected Local Paths
+
+The shared path registry is:
+
+```text
+studio_paths.json
+```
+
+It links the control repo, OpenMontage repo, and existing content-factory output
+folders. Validate the links with:
+
+```bat
+python scripts/studio_paths.py
+```
+
+## Local Dashboard
+
+The dashboard is the visual control board for the broader workflow: video cards, stage
+status, missing asset notes, render links, and the next action for each project.
+
+Build the data snapshot:
+
+```powershell
+python scripts\build_dashboard.py
+```
+
+Serve it locally:
+
+```powershell
+python -m http.server 8127 --bind 127.0.0.1 --directory dashboard
+```
+
+Open:
+
+```text
+http://127.0.0.1:8127/
+```
+
+Examples:
+
+```powershell
+# raw bridge smoke test
+powershell -ExecutionPolicy Bypass -File scripts/hermes-bridge.ps1 -Prompt "Reply with exactly: HERMES_BRIDGE_OK"
+
+# producer brief to stdout
+powershell -ExecutionPolicy Bypass -File scripts/hermes-producer-brief.ps1 -VideoSlug ai-agents-2026 -Topic "How AI coding agents help ship faster" -StdoutOnly
+
+# asset research planning pass
+powershell -ExecutionPolicy Bypass -File scripts/hermes-asset-research-plan.ps1 -VideoSlug ai-agents-2026
+
+# Open Design template review after asset-board.csv exists
+powershell -ExecutionPolicy Bypass -File scripts/hermes-open-design-template-review.ps1 -VideoSlug ai-agents-2026
+```
+
+Helpful switches:
+
+- `-StdoutOnly` returns the deliverable in chat instead of asking Hermes to write files.
+- `-PrintPrompt` prints the exact prompt without invoking Hermes.
+- `-Yolo` passes `--yolo` through to Hermes when you explicitly want open-lane execution.
+
 
 ## Design Rule
 

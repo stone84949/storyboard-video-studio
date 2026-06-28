@@ -1,0 +1,35 @@
+{
+  "launcher": {
+    "execute": false,
+    "machine": "beast",
+    "run_label": "codex-ui-smoke",
+    "engine": "hyperframes"
+  },
+  "storyboard": {
+    "workflow_stage": "plan",
+    "id": "codex-ui-smoke",
+    "total_duration_sec": 6.4,
+    "pipeline_target": "longer-shorts",
+    "task_id": "task-codex-ui-smoke",
+    "aspect_ratio": "9:16",
+    "title": "Codex UI Smoke",
+    "scenes": [
+      {
+        "narration": "Opening line",
+        "title": "Hook",
+        "duration": 3.2,
+        "assetUrl": "hook.jpg",
+        "id": "scene-01",
+        "motionPreset": "zoom-in"
+      },
+      {
+        "narration": "Proof line",
+        "title": "Proof",
+        "duration": 3.2,
+        "assetUrl": "proof.jpg",
+        "id": "scene-02",
+        "motionPreset": "pan-left-right"
+      }
+    ]
+  }
+}

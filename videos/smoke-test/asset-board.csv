@@ -1,0 +1,2 @@
+scene_id,asset_id,asset_type,intended_use,source_url,source_name,local_path,license_status,usage_risk,credit_required,credit_text,crop_mode,focal_x,focal_y,status,notes
+scene-01,asset-a,screenshot,terminal command example,https://example.com,Example,,,,needs-review,,,fit,0.5,0.5,candidate,placeholder row for template review smoke test

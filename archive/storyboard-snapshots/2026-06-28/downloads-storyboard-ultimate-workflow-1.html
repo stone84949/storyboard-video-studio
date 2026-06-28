@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Storyboard Ultimate Workflow</title>
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root,[data-theme="light"]{--bg:#f7f6f2;--surface:#f9f8f5;--surface2:#fbfbf9;--offset:#f3f0ec;--divider:#dcd9d5;--text:#28251d;--muted:#6d6b66;--faint:#aaa59d;--inverse:#f9f8f4;--primary:#01696f;--blue:#006494;--success:#437a22;--warning:#964219;--error:#a12c7b;--orange:#da7101;--purple:#7a39bb;--radius:14px;--shadow:0 8px 20px rgba(0,0,0,.08);--font:'Satoshi',Inter,sans-serif;--px:58}
+    [data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--surface2:#201f1d;--offset:#23211f;--divider:#262523;--text:#e1dfdb;--muted:#a5a29b;--faint:#6f6a64;--inverse:#171412;--primary:#4f98a3;--blue:#5591c7;--success:#6daa45;--warning:#bb653b;--error:#d163a7;--orange:#fdab43;--purple:#a86fdf;--shadow:0 8px 20px rgba(0,0,0,.34)}
+    *{box-sizing:border-box} html,body{height:100%;margin:0} body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden} img{display:block;max-width:100%}
+    button,input,select,textarea{font:inherit;color:inherit} button{cursor:pointer;border:none;background:none} input,select,textarea{background:var(--offset);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.72rem .85rem} textarea{resize:vertical;min-height:80px}
+    .app{display:grid;grid-template-columns:290px 1fr 440px;grid-template-rows:auto auto 1fr 330px;height:100dvh}.sidebar{grid-row:1/-1;border-right:1px solid var(--divider);background:var(--surface);overflow:auto}.topbar{grid-column:2/4;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--divider);background:var(--surface)}.workflow{grid-column:2/4;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;padding:14px 20px;border-bottom:1px solid var(--divider);background:var(--surface2)}.main{grid-column:2;grid-row:3;overflow:auto;padding:20px}.right{grid-column:3;grid-row:3/-1;border-left:1px solid var(--divider);background:var(--surface);overflow:auto}.timeline{grid-column:2;grid-row:4;border-top:1px solid var(--divider);background:var(--surface)}
+    .brand,.section,.card{padding:16px}.brand{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--divider)}.logo{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--primary),var(--blue))}.section{display:grid;gap:12px;border-bottom:1px solid var(--divider)}.section-title{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    .stack,.scene-stack,.machine-stack,.job-stack,.asset-stack,.checklist-stack,.event-stack{display:grid;gap:10px}.tool-grid,.field-grid,.mini-grid{display:grid;gap:10px}.tool-grid,.mini-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .card{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:16px;box-shadow:var(--shadow)} .btn,.tool-btn,.scene-card,.machine-card,.job-card,.asset-row,.check-item,.event-item,.workflow-step,.track-label{display:flex;align-items:center;gap:10px;padding:.82rem .96rem;border:1px solid rgba(255,255,255,.08);background:var(--surface2);border-radius:12px}
+    .btn{justify-content:center;font-weight:700}.btn.primary{background:var(--primary);color:var(--inverse);border-color:transparent}.btn.success{background:var(--success);color:#11200a;border-color:transparent}.btn.orange{background:var(--orange);color:#1f160c;border-color:transparent}.btn.warn{background:var(--warning);color:#1f120c;border-color:transparent}
+    .tool-btn{justify-content:center;font-size:14px;font-weight:700}.scene-card,.asset-row,.machine-card,.job-card,.check-item,.event-item,.workflow-step{justify-content:space-between}.scene-card.active,.machine-card.active,.job-card.active,.asset-row.active,.workflow-step.active{background:rgba(79,152,163,.16);border-color:rgba(79,152,163,.35)}.workflow-step.done{border-color:rgba(109,170,69,.35)}
+    .workspace{display:grid;grid-template-columns:1.06fr .94fr;gap:20px}.row,.actions,.status-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.field{display:grid;gap:8px}.field label{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase}.muted{color:var(--muted)}.faint{color:var(--faint)}.pill{display:inline-flex;align-items:center;padding:.3rem .56rem;border-radius:999px;font-size:12px;background:var(--offset)}
+    .preview{position:relative;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#0c1117;border:1px solid rgba(255,255,255,.06)}.preview img{width:100%;height:100%;object-fit:cover}.guides:before,.guides:after{content:"";position:absolute;border:1px dashed rgba(255,255,255,.42);inset:8%}.guides:after{inset:16% 10%}.thumb{width:82px;aspect-ratio:9/16;border-radius:10px;overflow:hidden;background:var(--offset);flex:0 0 auto}.thumb img{width:100%;height:100%;object-fit:cover}
+    .jsonbox,.responsebox{width:100%;min-height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.responsebox{min-height:210px}.timeline-head{padding:12px 16px;border-bottom:1px solid var(--divider)}.timeline-body{display:grid;grid-template-columns:220px 1fr;height:270px}.labels{padding:12px;display:grid;gap:10px;border-right:1px solid var(--divider);background:var(--surface2)}.track-main{overflow:auto;padding:12px;background:linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0 / var(--px) 100%,var(--surface)}.ruler{display:grid;grid-auto-flow:column;grid-auto-columns:var(--px);position:sticky;top:0;background:var(--surface)}.ruler div{padding:.25rem .15rem;font-size:12px;color:var(--muted)}.clip-row{position:relative;height:48px;border-radius:12px;background:var(--offset);margin-top:10px}
+    .clip{position:absolute;top:4px;bottom:4px;border-radius:10px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 10px;min-width:58px;font-size:12px;font-weight:800;user-select:none}.clip.scene{background:linear-gradient(90deg,var(--primary),var(--blue))}.clip.motion{background:linear-gradient(90deg,var(--purple),#5b8ff0)}.clip.text{background:linear-gradient(90deg,#b95525,#ed8c53)}.clip.audio{background:linear-gradient(90deg,#4d8f25,#6daa45)}.clip .handle{position:absolute;top:0;bottom:0;width:10px;cursor:ew-resize}.clip .handle.left{left:0}.clip .handle.right{right:0}
+    .dropzone{outline:2px dashed rgba(79,152,163,.5)} .status-good{color:var(--success)} .status-warn{color:var(--warning)} .status-bad{color:var(--error)} .checkbox{width:18px;height:18px}
+    @media (max-width:1260px){.app{grid-template-columns:270px 1fr;grid-template-rows:auto auto 1fr 330px auto}.right{grid-column:1/-1;grid-row:5;border-left:none;border-top:1px solid var(--divider)}.topbar,.workflow{grid-column:2}.workflow{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace{grid-template-columns:1fr}} @media (max-width:820px){body{overflow:auto}.app{display:block;height:auto}.tool-grid,.mini-grid,.field-grid{grid-template-columns:1fr}.timeline-body{grid-template-columns:1fr}.labels{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="logo"><i data-lucide="film"></i></div><div><div style="font-size:1.15rem;font-weight:900">Ultimate Workflow</div><div class="muted" style="font-size:14px">Storyboard, bridge, queue, QA, and render handoff.</div></div></div>
+      <div class="section">
+        <div class="section-title"><span>Quick actions</span><span>control</span></div>
+        <div class="tool-grid">
+          <button class="tool-btn" id="addSceneBtn"><i data-lucide="image-plus"></i><span>Add scene</span></button>
+          <button class="tool-btn" id="duplicateSceneBtn"><i data-lucide="copy-plus"></i><span>Duplicate</span></button>
+          <button class="tool-btn" id="recalcBtn"><i data-lucide="timer-reset"></i><span>Recalc</span></button>
+          <button class="tool-btn" id="themeBtn"><i data-lucide="moon-star"></i><span>Theme</span></button>
+          <button class="tool-btn" id="saveLocalBtn"><i data-lucide="hard-drive-download"></i><span>Save local</span></button>
+          <button class="tool-btn" id="loadLocalBtn"><i data-lucide="hard-drive-upload"></i><span>Load local</span></button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title"><span>Machines</span><span>mission control</span></div>
+        <div class="machine-stack" id="machineStack"></div>
+      </div>
+      <div class="section">
+        <div class="section-title"><span>Jobs</span><span>render queue</span></div>
+        <div class="job-stack" id="jobStack"></div>
+      </div>
+      <div class="section">
+        <div class="section-title"><span>Checklist</span><span>preflight</span></div>
+        <div class="checklist-stack" id="checklistStack"></div>
+      </div>
+    </aside>
+
+    <header class="topbar">
+      <div>
+        <div style="font-size:1.35rem;font-weight:900">Storyboard -> Bridge -> Render Console</div>
+        <div class="muted" id="bridgeStatus">One place to approve, export, launch, and review runs.</div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="pingBridgeBtn"><i data-lucide="activity"></i><span>Ping bridge</span></button>
+        <button class="btn" id="pollJobsBtn"><i data-lucide="refresh-cw"></i><span>Poll jobs</span></button>
+        <button class="btn orange" id="exportBundleBtn"><i data-lucide="package"></i><span>Export bundle</span></button>
+        <button class="btn primary" id="sendBridgeBtn"><i data-lucide="send"></i><span>Send to bridge</span></button>
+        <button class="btn success" id="sendExecuteBtn"><i data-lucide="rocket"></i><span>Send + execute</span></button>
+      </div>
+    </header>
+
+    <section class="workflow" id="workflowBar"></section>
+
+    <main class="main">
+      <div class="workspace">
+        <section class="card stack">
+          <div class="row" style="justify-content:space-between"><div><div class="section-title" style="padding:0;border:none"><span>Preview</span><span id="previewSceneCode">Scene 01</span></div><div style="font-size:1.05rem;font-weight:800" id="previewTitle">Cold open visual</div></div><div class="actions"><button class="btn" id="readyBtn">Ready</button><button class="btn" id="approveBtn">Approve</button><button class="btn warn" id="flagBtn">Flag</button></div></div>
+          <div class="preview"><img id="previewImage" src="https://picsum.photos/seed/story-scene1/1080/1920" alt="Preview" width="1080" height="1920"><div class="guides"></div></div>
+          <div class="status-row"><span class="pill" id="durationBadge">3.2s</span><span class="pill" id="motionBadge">zoom-in</span><span class="pill" id="sceneStatusBadge">raw</span><span class="pill" id="assetStateBadge">approved</span></div>
+          <div class="scene-stack" id="sceneStack"></div>
+        </section>
+
+        <section class="card stack">
+          <div class="section-title" style="padding:0;border:none"><span>Launcher + notes</span><span>run setup</span></div><div class="mini-grid"><button class="btn" id="validateBtn"><i data-lucide="shield-check"></i><span>Validate assets</span></button><button class="btn" id="autoVoBtn"><i data-lucide="mic-2"></i><span>Auto VO timing</span></button><button class="btn" id="fitDurationsBtn"><i data-lucide="stretch-horizontal"></i><span>Fit durations</span></button><button class="btn orange" id="editorHandoffBtn"><i data-lucide="folder-output"></i><span>Editor handoff</span></button><button class="btn" id="paceSuggestBtn"><i data-lucide="timer"></i><span>Pacing suggest</span></button></div>
+          <div class="field-grid">
+            <div class="field"><label>Bridge URL</label><input id="bridgeUrlInput" value="http://127.0.0.1:8765"></div>
+            <div class="field"><label>Machine</label><select id="machineSelect"></select></div>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label>Engine</label><select id="engineSelect"><option value="hyperframes">HyperFrames</option><option value="openmontage">OpenMontage</option></select></div>
+            <div class="field"><label>Run label</label><input id="runLabelInput" value="storyboard-ultimate-001"></div>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label>Aspect</label><select id="aspectInput"><option>9:16</option><option>16:9</option><option>1:1</option></select></div>
+            <div class="field"><label>Mission task ID</label><input id="taskIdInput" value="task-storyboard-001"></div>
+          </div>
+          <div class="field"><label>Execute command after write</label><select id="executeModeInput"><option value="false">No, write preview only</option><option value="true">Yes, execute if bridge supports it</option></select></div>
+          <div class="field"><label>Project notes</label><textarea id="projectNotesInput">Review flagged assets before final render. Keep center safe for captions and leave room for logo or CTA.</textarea></div><div class="field"><label>Voiceover notes</label><textarea id="voiceoverNotesInput">Narration should stay calm, paced, and documentary-style. Leave short breathing room between scenes.</textarea></div><div class="field-grid"><div class="field"><label>Words per minute</label><input id="wpmInput" type="number" min="80" step="5" value="132"></div><div class="field"><label>Scene buffer sec</label><input id="voBufferInput" type="number" min="0" step="0.1" value="0.3"></div></div>
+          <div class="field"><label>Payload preview</label><textarea id="payloadBox" class="jsonbox"></textarea></div>
+        </section>
+      </div>
+    </main>
+
+    <aside class="right">
+      <div class="card stack">
+        <div class="section-title" style="padding:0;border:none"><span>Scene inspector</span><span id="inspectorSceneCode">Scene 01</span></div>
+        <div class="field"><label>Shot name</label><input id="shotNameInput"></div>
+        <div class="field"><label>Asset URL</label><input id="assetUrlInput"></div>
+        <div class="field-grid">
+          <div class="field"><label>Duration</label><input id="durationInput" type="number" min="0.5" step="0.1"></div>
+          <div class="field"><label>Transition</label><select id="transitionInput"><option>fade</option><option>slide</option><option>cut</option></select></div>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label>Motion</label><select id="motionInput"><option>zoom-in</option><option>pan-left-right</option><option>pan-right-left</option><option>push-in</option><option>static</option></select></div>
+          <div class="field"><label>Status</label><select id="statusInput"><option>raw</option><option>ready</option><option>approved</option><option>flagged</option><option>exported</option></select></div>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label>Asset state</label><select id="assetStateInput"><option>approved</option><option>needs-image</option><option>replace-later</option></select></div>
+          <div class="field"><label>Caption mode</label><select id="captionInput"><option>none</option><option>lower-third</option><option>center-title</option><option>full-caption</option></select></div>
+        </div>
+        <div class="field"><label>Prompt notes</label><textarea id="notesInput"></textarea></div><div class="field"><label>Narration / script</label><textarea id="narrationInput"></textarea></div><div class="field-grid"><div class="field"><label>VO start</label><input id="voStartInput" type="number" min="0" step="0.1"></div><div class="field"><label>VO end</label><input id="voEndInput" type="number" min="0" step="0.1"></div></div>
+      </div>
+      <div class="card stack">
+        <div class="section-title" style="padding:0;border:none"><span>Assets + events</span><span>review</span></div>
+        <div class="asset-stack" id="assetStack"></div>
+        <div class="event-stack" id="eventStack"></div>
+      </div>
+      <div class="card stack">
+        <div class="section-title" style="padding:0;border:none"><span>Bridge response</span><span>live</span></div>
+        <textarea id="responseBox" class="responsebox" readonly>Nothing sent yet.</textarea>
+      </div>
+    </aside>
+
+    <section class="timeline">
+      <div class="timeline-head"><div class="row" style="justify-content:space-between"><div><div class="section-title" style="padding:0;border:none"><span>Timeline</span><span>resize + reorder</span></div><div style="font-weight:800">Drag clips by scene card reorder, drag edges to resize durations, then push directly to bridge.</div></div><div class="actions"><button class="btn" id="zoomOutBtn">-</button><button class="btn" id="zoomInBtn">+</button></div></div></div>
+      <div class="timeline-body"><div class="labels"><div class="track-label"><i data-lucide="image"></i><span>Scene track</span></div><div class="track-label"><i data-lucide="sparkles"></i><span>Motion track</span></div><div class="track-label"><i data-lucide="captions"></i><span>Text track</span></div><div class="track-label"><i data-lucide="audio-lines"></i><span>Audio track</span></div></div><div class="track-main"><div class="ruler" id="ruler"></div><div class="clip-row" id="sceneTrack"></div><div class="clip-row" id="motionTrack"></div><div class="clip-row" id="textTrack"></div><div class="clip-row" id="audioTrack"></div></div></div>
+    </section>
+  </div>
+
+  <script>
+    const state={
+      project:{id:'storyboard-ultimate-001',title:'Storyboard Ultimate Workflow',aspect_ratio:'9:16',workflow_stage:'plan',px:58,task_id:'task-storyboard-001'},
+      stages:['plan','approve','export','render','review','publish'],
+      selectedMachineId:'beast',selectedSceneId:'scene-01',selectedJobId:'job-001',execute:false,
+      projectNotes:'Review flagged assets before final render. Keep center safe for captions and leave room for logo or CTA.',
+      machines:[{id:'beast',name:'BEAST',status:'online',engine:'hyperframes',jobs:1,note:'Primary render box'},{id:'cyberpower',name:'CyberPower',status:'idle',engine:'openmontage',jobs:0,note:'Control / handoff node'},{id:'skytech',name:'SkyTech',status:'idle',engine:'hyperframes',jobs:0,note:'Overflow worker'}],
+      jobs:[{id:'job-001',label:'night-short-01',machineId:'beast',engine:'hyperframes',status:'running',progress:62},{id:'job-002',label:'review-handoff-01',machineId:'cyberpower',engine:'openmontage',status:'queued',progress:0}],
+      checklist:[
+        {id:'chk-1',label:'All scenes have images',done:false},
+        {id:'chk-2',label:'No flagged shots remain',done:false},
+        {id:'chk-3',label:'Caption-safe area checked',done:true},
+        {id:'chk-4',label:'Project notes reviewed',done:true}
+      ],
+      events:[
+        {time:'03:58',text:'Bridge write prepared for storyboard-ultimate-001.'},
+        {time:'04:01',text:'BEAST reported 1 running job.'}
+      ],
+      validationResults:[],
+      voiceoverNotes:'Narration should stay calm, paced, and documentary-style. Leave short breathing room between scenes.',
+      voiceSettings:{wpm:132,buffer:0.3},
+      scenes:[
+        {id:'scene-01',title:'Cold open visual',assetUrl:'https://picsum.photos/seed/story-scene1/1080/1920',duration:3.2,start:0,transition:'fade',motionPreset:'zoom-in',status:'raw',assetState:'approved',captionMode:'center-title',notes:'Fast hook frame with dark center-safe composition.',narration:'This is where the story opens with a strong visual hook.',voStart:0.0,voEnd:2.9},
+        {id:'scene-02',title:'Problem setup',assetUrl:'https://picsum.photos/seed/story-scene2/1080/1920',duration:4.8,start:3.2,transition:'cut',motionPreset:'pan-right-left',status:'ready',assetState:'needs-image',captionMode:'lower-third',notes:'Leave space on right side for captions.',narration:'Here we frame the problem and introduce the core tension.',voStart:3.3,voEnd:7.4},
+        {id:'scene-03',title:'Main proof visual',assetUrl:'https://picsum.photos/seed/story-scene3/1080/1920',duration:5.1,start:8.0,transition:'fade',motionPreset:'pan-left-right',status:'approved',assetState:'approved',captionMode:'lower-third',notes:'Use as proof frame with product/service focus.',narration:'Now we move into the main proof point and visual evidence.',voStart:8.1,voEnd:12.4},
+        {id:'scene-04',title:'CTA end frame',assetUrl:'https://picsum.photos/seed/story-scene4/1080/1920',duration:3.6,start:13.1,transition:'slide',motionPreset:'static',status:'flagged',assetState:'replace-later',captionMode:'center-title',notes:'End card needs final branded image swap.',narration:'Finish with the call to action and clear next step.',voStart:13.3,voEnd:16.2}
+      ]
+    };
+    const q=id=>document.getElementById(id); const fmt=s=>`${Number(s).toFixed(1)}s`;
+    function recalc(){let cur=0; state.scenes.forEach((s,i)=>{s.order=i+1;s.start=Number(cur.toFixed(2));cur+=Number(s.duration)});} function totalDuration(){return state.scenes.reduce((a,b)=>a+Number(b.duration||0),0)} function scene(){return state.scenes.find(x=>x.id===state.selectedSceneId)||state.scenes[0]} function job(){return state.jobs.find(x=>x.id===state.selectedJobId)||state.jobs[0]}
+    function payload(){return {storyboard:{id:state.project.id,title:state.project.title,aspect_ratio:state.project.aspect_ratio,workflow_stage:state.project.workflow_stage,task_id:state.project.task_id,total_duration_sec:Number(totalDuration().toFixed(2)),project_notes:state.projectNotes,voiceover_notes:state.voiceoverNotes,voice_settings:state.voiceSettings,scenes:state.scenes},launcher:{machine:state.selectedMachineId,engine:q('engineSelect').value,run_label:q('runLabelInput').value.trim(),execute:q('executeModeInput').value==='true'},mission_control:{open_task_id:state.project.task_id},checklist:state.checklist,validation_results:state.validationResults,events:state.events}}
+    function renderWorkflow(){const wrap=q('workflowBar'); wrap.innerHTML=''; const current=state.stages.indexOf(state.project.workflow_stage); state.stages.forEach((stage,i)=>{const btn=document.createElement('button'); btn.className='workflow-step'+(stage===state.project.workflow_stage?' active':'')+(i<current?' done':''); btn.innerHTML=`<span><strong>${stage}</strong><br><span class="muted" style="font-size:12px">${i<current?'done':stage===state.project.workflow_stage?'current':'set stage'}</span></span><i data-lucide="${i<current?'check-circle-2':stage===state.project.workflow_stage?'play-circle':'circle'}"></i>`; btn.onclick=()=>{state.project.workflow_stage=stage; renderAll();}; wrap.appendChild(btn);});}
+    function renderMachines(){const wrap=q('machineStack'); wrap.innerHTML=''; q('machineSelect').innerHTML=''; state.machines.forEach(m=>{const btn=document.createElement('button'); btn.className='machine-card'+(m.id===state.selectedMachineId?' active':''); btn.innerHTML=`<span><strong>${m.name}</strong><br><span class="muted" style="font-size:12px">${m.engine} · ${m.status}</span></span><span class="pill">${m.jobs} jobs</span>`; btn.onclick=()=>{state.selectedMachineId=m.id; renderAll();}; wrap.appendChild(btn); const opt=document.createElement('option'); opt.value=m.id; opt.textContent=`${m.name} (${m.status})`; q('machineSelect').appendChild(opt);}); q('machineSelect').value=state.selectedMachineId;}
+    function renderJobs(){const wrap=q('jobStack'); wrap.innerHTML=''; state.jobs.forEach(j=>{const btn=document.createElement('button'); btn.className='job-card'+(j.id===state.selectedJobId?' active':''); btn.innerHTML=`<span><strong>${j.label}</strong><br><span class="muted" style="font-size:12px">${j.engine} · ${j.status}</span></span><span class="pill">${j.progress}%</span>`; btn.onclick=()=>{state.selectedJobId=j.id; renderAll();}; wrap.appendChild(btn);});}
+    function renderChecklist(){const wrap=q('checklistStack'); wrap.innerHTML=''; state.checklist.forEach(item=>{const row=document.createElement('label'); row.className='check-item'; row.innerHTML=`<span><strong>${item.label}</strong></span><input class="checkbox" type="checkbox" ${item.done?'checked':''}>`; const input=row.querySelector('input'); input.onchange=e=>{item.done=e.target.checked; renderAll();}; wrap.appendChild(row);});}
+    function renderEvents(){const wrap=q('eventStack'); wrap.innerHTML=''; state.events.slice().reverse().slice(0,6).forEach(evt=>{const row=document.createElement('div'); row.className='event-item'; row.innerHTML=`<span><strong>${evt.time}</strong> ${evt.text}</span><span class="pill">event</span>`; wrap.appendChild(row);});}
+    function renderPreview(){const s=scene(); q('previewSceneCode').textContent=`Scene ${String(s.order).padStart(2,'0')}`; q('previewTitle').textContent=s.title; q('previewImage').src=s.assetUrl; q('durationBadge').textContent=fmt(s.duration); q('motionBadge').textContent=s.motionPreset; q('sceneStatusBadge').textContent=s.status; q('assetStateBadge').textContent=s.assetState; q('inspectorSceneCode').textContent=`Scene ${String(s.order).padStart(2,'0')}`; q('shotNameInput').value=s.title; q('assetUrlInput').value=s.assetUrl; q('durationInput').value=s.duration; q('transitionInput').value=s.transition; q('motionInput').value=s.motionPreset; q('statusInput').value=s.status; q('assetStateInput').value=s.assetState; q('captionInput').value=s.captionMode; q('notesInput').value=s.notes; q('narrationInput').value=s.narration||''; q('voStartInput').value=Number(s.voStart||0); q('voEndInput').value=Number(s.voEnd||0);}
+    function renderScenes(){const wrap=q('sceneStack'); wrap.innerHTML=''; state.scenes.forEach(s=>{const btn=document.createElement('button'); btn.className='scene-card'+(s.id===state.selectedSceneId?' active':''); btn.draggable=true; btn.dataset.sceneId=s.id; btn.innerHTML=`<span style="display:flex;gap:10px;align-items:flex-start"><span class="thumb"><img src="${s.assetUrl}" alt="${s.title}" width="270" height="480"></span><span class="stack" style="min-width:0"><span style="font-weight:800">${String(s.order).padStart(2,'0')}. ${s.title}</span><span class="muted">${fmt(s.duration)} · ${s.motionPreset} · ${s.transition}</span><span class="row"><span class="pill">${s.status}</span><span class="pill">${s.assetState}</span><span class="pill">${s.captionMode}</span></span></span></span><i data-lucide="grip-vertical"></i>`; btn.onclick=()=>{state.selectedSceneId=s.id; renderAll();}; btn.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',s.id);}); btn.addEventListener('dragover',e=>{e.preventDefault(); btn.classList.add('dropzone');}); btn.addEventListener('dragleave',()=>btn.classList.remove('dropzone')); btn.addEventListener('drop',e=>{e.preventDefault(); btn.classList.remove('dropzone'); const fromId=e.dataTransfer.getData('text/plain'); reorderScene(fromId,s.id);}); wrap.appendChild(btn);});}
+    function renderAssets(){const wrap=q('assetStack'); wrap.innerHTML=''; state.scenes.forEach(s=>{const row=document.createElement('button'); row.className='asset-row'+(s.id===state.selectedSceneId?' active':''); const urlText=(s.assetUrl||'').slice(0,42); row.innerHTML=`<span><strong>${s.title}</strong><br><span class="muted" style="font-size:12px">${s.assetState} · ${urlText}${(s.assetUrl||'').length>42?'...':''}</span><br><span class="muted" style="font-size:12px">VO ${Number(s.voStart||0).toFixed(1)}-${Number(s.voEnd||0).toFixed(1)}s</span></span><span class="pill">${s.status}</span>`; row.onclick=()=>{state.selectedSceneId=s.id; renderAll();}; wrap.appendChild(row);}); if(state.validationResults.length){state.validationResults.slice(0,8).forEach(v=>{const row=document.createElement('div'); row.className='event-item'; row.innerHTML=`<span><strong>${v.scene}</strong><br><span class="muted" style="font-size:12px">${v.message}</span></span><span class="pill">${v.status}</span>`; wrap.appendChild(row);});}}
+    function renderPayload(){q('payloadBox').value=JSON.stringify(payload(),null,2);}
+    function renderFormMeta(){q('aspectInput').value=state.project.aspect_ratio; q('taskIdInput').value=state.project.task_id; q('projectNotesInput').value=state.projectNotes; q('voiceoverNotesInput').value=state.voiceoverNotes; q('wpmInput').value=state.voiceSettings.wpm; q('voBufferInput').value=state.voiceSettings.buffer; q('executeModeInput').value=String(state.execute);}
+    function renderTimeline(){const ruler=q('ruler'); ruler.innerHTML=''; const total=Math.ceil(totalDuration())+5; for(let i=0;i<=total;i++){const d=document.createElement('div'); d.textContent=`0:${String(i).padStart(2,'0')}`; ruler.appendChild(d);} const renderTrack=(el,type,labeler)=>{el.innerHTML=''; state.scenes.forEach(s=>{const clip=document.createElement('div'); clip.className=`clip ${type}`; clip.style.left=`${s.start*state.project.px}px`; clip.style.width=`${Math.max(58,s.duration*state.project.px)}px`; clip.innerHTML=`${type==='scene'?'<span class="handle left"></span><span class="handle right"></span>':''}<span>${labeler(s)}</span><span>${fmt(s.duration)}</span>`; if(type==='scene'){clip.dataset.sceneId=s.id; clip.querySelector('.handle.left').addEventListener('mousedown',e=>startResize(e,s.id,'left')); clip.querySelector('.handle.right').addEventListener('mousedown',e=>startResize(e,s.id,'right'));} el.appendChild(clip);});}; renderTrack(q('sceneTrack'),'scene',s=>s.title); renderTrack(q('motionTrack'),'motion',s=>s.motionPreset); renderTrack(q('textTrack'),'text',s=>s.captionMode); renderTrack(q('audioTrack'),'audio',s=>'Audio bed');}
+    function renderAll(){recalc(); renderWorkflow(); renderMachines(); renderJobs(); renderChecklist(); renderEvents(); renderPreview(); renderScenes(); renderAssets(); renderPayload(); renderFormMeta(); renderTimeline(); if(window.lucide) lucide.createIcons(); updateBridgeStatusText();}
+    function updateScene(patch){Object.assign(scene(),patch); renderAll();}
+    function addEvent(text){const now=new Date(); const hh=String(now.getHours()).padStart(2,'0'); const mm=String(now.getMinutes()).padStart(2,'0'); state.events.push({time:`${hh}:${mm}`,text}); renderEvents();}
+    function reorderScene(fromId,toId){if(fromId===toId) return; const fromIndex=state.scenes.findIndex(s=>s.id===fromId); const toIndex=state.scenes.findIndex(s=>s.id===toId); if(fromIndex<0||toIndex<0) return; const [item]=state.scenes.splice(fromIndex,1); state.scenes.splice(toIndex,0,item); addEvent(`Reordered ${fromId} before/around ${toId}.`); renderAll();}
+    function addScene(){const id=`scene-${String(state.scenes.length+1).padStart(2,'0')}`; state.scenes.push({id,title:`New scene ${state.scenes.length+1}`,assetUrl:'https://picsum.photos/seed/newscene/1080/1920',duration:3.0,start:totalDuration(),transition:'fade',motionPreset:'zoom-in',status:'raw',assetState:'needs-image',captionMode:'none',notes:'Replace with notes.'}); state.selectedSceneId=id; addEvent(`Added ${id}.`); renderAll();}
+    function duplicateScene(){const s=scene(); const clone=JSON.parse(JSON.stringify(s)); clone.id=`scene-${Date.now()}`; clone.title=s.title+' copy'; clone.status='raw'; state.scenes.push(clone); state.selectedSceneId=clone.id; addEvent(`Duplicated ${s.id}.`); renderAll();}
+    function startResize(e,sceneId,edge){e.preventDefault(); const startX=e.clientX; const target=state.scenes.find(s=>s.id===sceneId); const initial=target.duration; function move(ev){const delta=(ev.clientX-startX)/state.project.px; if(edge==='right'){target.duration=Math.max(.5,Number((initial+delta).toFixed(1)));} else {const next=Math.max(.5,Number((initial-delta).toFixed(1))); target.duration=next;} renderAll();} function up(){document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); addEvent(`Resized ${sceneId} to ${target.duration.toFixed(1)}s.`);} document.addEventListener('mousemove',move); document.addEventListener('mouseup',up);}
+    function saveLocal(){localStorage.setItem('storyboard-ultimate-workflow',JSON.stringify(state)); addEvent('Saved local state.');}
+    function loadLocal(){const raw=localStorage.getItem('storyboard-ultimate-workflow'); if(!raw) return; const parsed=JSON.parse(raw); Object.assign(state,parsed); renderAll(); addEvent('Loaded local state.');}
+    function exportBundle(){const blob=new Blob([JSON.stringify(payload(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${state.project.id}-bundle.json`; a.click(); URL.revokeObjectURL(a.href); addEvent('Exported workflow bundle.');}
+
+    
+    function countWords(text){return (String(text||'').trim().match(/\b\w+\b/g)||[]).length;}
+    function autoFillVoTimings(){
+      const wpm=Math.max(80, Number(state.voiceSettings.wpm||132));
+      const buffer=Math.max(0, Number(state.voiceSettings.buffer||0.3));
+      let cursor=0;
+      state.scenes.forEach(s=>{
+        const words=countWords(s.narration||'');
+        const speechSeconds=words>0 ? (words / wpm) * 60 : Math.max(1.2, Number(s.duration||0) * 0.55);
+        const sceneSpan=Math.max(0.8, Number(s.duration||0));
+        const voLen=Math.min(sceneSpan, Number((speechSeconds + buffer).toFixed(1)));
+        s.voStart=Number((cursor + 0.05).toFixed(1));
+        s.voEnd=Number((s.voStart + Math.max(0.6, voLen - 0.05)).toFixed(1));
+        if(s.voEnd > s.start + sceneSpan){ s.voEnd=Number((s.start + sceneSpan - 0.05).toFixed(1)); }
+        cursor=s.start + sceneSpan;
+      });
+      addEvent('Auto-filled VO timings from narration.');
+      renderAll();
+    }
+    function suggestPacing(){
+      const suggestions=state.scenes.map(s=>{
+        const words=countWords(s.narration||'');
+        const desired=Math.max(1.4, Number((((words / Math.max(80,state.voiceSettings.wpm))*60) + state.voiceSettings.buffer).toFixed(1)));
+        return {scene:s.id, current:s.duration, suggested:desired, delta:Number((desired - s.duration).toFixed(1))};
+      });
+      q('responseBox').value=JSON.stringify({type:'pacing-suggestions', wpm:state.voiceSettings.wpm, buffer:state.voiceSettings.buffer, suggestions}, null, 2);
+      addEvent('Generated pacing suggestions.');
+    }
+
+    function fitDurationsToNarration(){
+      const wpm=Math.max(80, Number(state.voiceSettings.wpm||132));
+      const buffer=Math.max(0, Number(state.voiceSettings.buffer||0.3));
+      state.scenes.forEach(s=>{
+        const words=countWords(s.narration||'');
+        const speechSeconds=words>0 ? (words / wpm) * 60 : Math.max(1.2, Number(s.duration||0) * 0.55);
+        const target=Math.max(1.4, Number((speechSeconds + buffer + 0.25).toFixed(1)));
+        s.duration=target;
+      });
+      recalc();
+      autoFillVoTimings();
+      addEvent('Auto-fit scene durations to narration length.');
+      renderAll();
+    }
+
+    function validateScenes(){
+      const results=[];
+      state.scenes.forEach(s=>{
+        if(!s.assetUrl || !String(s.assetUrl).trim()) results.push({scene:s.id,status:'fail',message:'Missing asset URL.'});
+        if(!(Number(s.duration)>0)) results.push({scene:s.id,status:'fail',message:'Duration must be greater than 0.'});
+        if(s.status==='flagged') results.push({scene:s.id,status:'warn',message:'Scene is flagged and should be reviewed before launch.'});
+        if(s.assetState==='needs-image') results.push({scene:s.id,status:'warn',message:'Scene still needs an approved image.'});
+        if(!s.narration || !String(s.narration).trim()) results.push({scene:s.id,status:'warn',message:'Narration/script text is empty.'});
+        if(Number(s.voEnd||0) < Number(s.voStart||0)) results.push({scene:s.id,status:'fail',message:'VO end is earlier than VO start.'});
+        if(Number(s.voEnd||0) > Number(s.start||0) + Number(s.duration||0) + 0.25) results.push({scene:s.id,status:'warn',message:'VO extends beyond scene duration.'});
+      });
+      if(!results.length) results.push({scene:'all',status:'pass',message:'All scenes passed validation.'});
+      state.validationResults=results;
+      addEvent('Ran scene validation.');
+      renderAll();
+      return results;
+    }
+    function buildEditorHandoff(){
+      const handoff={
+        editor:{target:['Shotcut','DaVinci Resolve'],notes:state.projectNotes,voiceover_notes:state.voiceoverNotes},
+        timeline:state.scenes.map(s=>({
+          scene_id:s.id,title:s.title,start:s.start,duration:s.duration,asset:s.assetUrl,transition:s.transition,motion:s.motionPreset,
+          narration:s.narration,vo_start:s.voStart,vo_end:s.voEnd,caption_mode:s.captionMode,status:s.status,asset_state:s.assetState
+        }))
+      };
+      const blob=new Blob([JSON.stringify(handoff,null,2)],{type:'application/json'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=`${state.project.id}-editor-handoff.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      addEvent('Exported editor handoff bundle.');
+    }
+    function updateBridgeStatusText(){const flagged=state.scenes.filter(s=>s.status==='flagged').length; const missing=state.scenes.filter(s=>s.assetState==='needs-image').length; q('bridgeStatus').textContent=`${state.project.workflow_stage.toUpperCase()} stage · ${state.jobs.length} jobs tracked · ${flagged} flagged · ${missing} needing images.`;}
+    async function pingBridge(){const base=q('bridgeUrlInput').value.trim(); try{const res=await fetch(base+'/api/status'); const text=await res.text(); q('responseBox').value=text; addEvent('Pinged bridge successfully.');}catch(err){q('responseBox').value=String(err); addEvent('Bridge ping failed.');}}
+    async function pollJobs(){const base=q('bridgeUrlInput').value.trim(); try{const res=await fetch(base+'/api/status'); const data=await res.json(); if(Array.isArray(data.jobs)){ state.jobs=data.jobs.slice(-8).map((j,i)=>({id:`polled-${i}`,label:j.job,machineId:state.selectedMachineId,engine:q('engineSelect').value,status:'written',progress:100})); if(state.jobs[0]) state.selectedJobId=state.jobs[0].id; } q('responseBox').value=JSON.stringify(data,null,2); addEvent('Polled bridge jobs.'); renderAll(); }catch(err){q('responseBox').value=String(err); addEvent('Job poll failed.');}}
+    async function sendToBridge(execute){const issues=validateScenes(); if(issues.some(x=>x.status==='fail') || issues.some(x=>x.status==='warn' && /flagged|needs an approved image/i.test(x.message))){ q('responseBox').value=JSON.stringify({ok:false,message:'Validation blocked launch until warnings/failures are reviewed.',validation:issues},null,2); addEvent('Launch blocked by validation.'); return; } const base=q('bridgeUrlInput').value.trim(); state.execute=execute; const body={machine:state.selectedMachineId,engine:q('engineSelect').value,run_label:q('runLabelInput').value.trim() || 'storyboard-ultimate-001',execute, payload:payload()}; try{const res=await fetch(base+'/api/launch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); const text=await res.text(); q('responseBox').value=text; state.project.workflow_stage=execute?'render':'export'; state.jobs.unshift({id:`job-${Date.now()}`,label:body.run_label,machineId:state.selectedMachineId,engine:body.engine,status:execute?'launched':'written',progress:execute?10:100}); state.selectedJobId=state.jobs[0].id; const m=state.machines.find(x=>x.id===state.selectedMachineId); if(m) m.jobs+=1; addEvent(execute?'Sent payload and requested execute.':'Sent payload to bridge.'); renderAll();}catch(err){q('responseBox').value=String(err); addEvent('Bridge send failed.');}}
+    function toggleTheme(){const root=document.documentElement; root.setAttribute('data-theme',root.getAttribute('data-theme')==='dark'?'light':'dark'); if(window.lucide) lucide.createIcons();}
+
+    q('addSceneBtn').onclick=addScene; q('duplicateSceneBtn').onclick=duplicateScene; q('recalcBtn').onclick=()=>{recalc(); addEvent('Recalculated scene starts.'); renderAll();}; q('themeBtn').onclick=toggleTheme; q('saveLocalBtn').onclick=saveLocal; q('loadLocalBtn').onclick=loadLocal;
+    q('pingBridgeBtn').onclick=pingBridge; q('pollJobsBtn').onclick=pollJobs; q('exportBundleBtn').onclick=exportBundle; q('sendBridgeBtn').onclick=()=>sendToBridge(false); q('sendExecuteBtn').onclick=()=>sendToBridge(true);
+    q('machineSelect').onchange=e=>{state.selectedMachineId=e.target.value; renderAll();}; q('aspectInput').onchange=e=>{state.project.aspect_ratio=e.target.value; renderAll();}; q('taskIdInput').oninput=e=>{state.project.task_id=e.target.value; renderAll();}; q('projectNotesInput').oninput=e=>{state.projectNotes=e.target.value; renderAll();}; q('executeModeInput').onchange=e=>{state.execute=e.target.value==='true'; renderAll();}; q('engineSelect').onchange=renderPayload; q('runLabelInput').oninput=renderPayload;
+    [['shotNameInput','title'],['assetUrlInput','assetUrl'],['transitionInput','transition'],['motionInput','motionPreset'],['statusInput','status'],['assetStateInput','assetState'],['captionInput','captionMode'],['notesInput','notes'],['narrationInput','narration']].forEach(([id,key])=>{q(id).addEventListener('input',e=>updateScene({[key]:e.target.value})); q(id).addEventListener('change',e=>updateScene({[key]:e.target.value}));}); q('durationInput').addEventListener('input',e=>updateScene({duration:Math.max(.5,Number(e.target.value||.5))})); q('voStartInput').addEventListener('input',e=>updateScene({voStart:Number(e.target.value||0)})); q('voEndInput').addEventListener('input',e=>updateScene({voEnd:Number(e.target.value||0)}));
+    q('voiceoverNotesInput').oninput=e=>{state.voiceoverNotes=e.target.value; renderAll();}; q('wpmInput').oninput=e=>{state.voiceSettings.wpm=Number(e.target.value||132); renderAll();}; q('voBufferInput').oninput=e=>{state.voiceSettings.buffer=Number(e.target.value||0.3); renderAll();}; q('validateBtn').onclick=validateScenes; q('autoVoBtn').onclick=autoFillVoTimings; q('fitDurationsBtn').onclick=fitDurationsToNarration; q('paceSuggestBtn').onclick=suggestPacing; q('editorHandoffBtn').onclick=buildEditorHandoff;
+    q('readyBtn').onclick=()=>updateScene({status:'ready'}); q('approveBtn').onclick=()=>updateScene({status:'approved'}); q('flagBtn').onclick=()=>updateScene({status:'flagged'}); q('zoomInBtn').onclick=()=>{state.project.px=Math.min(120,state.project.px+8); renderAll();}; q('zoomOutBtn').onclick=()=>{state.project.px=Math.max(28,state.project.px-8); renderAll();};
+    renderAll(); if(window.lucide) lucide.createIcons();
+  </script>
+</body>
+</html>

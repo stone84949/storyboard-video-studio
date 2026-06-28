@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "status": "handoff_ready",
+  "job_dir": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-063212-montage-dry-run",
+  "openmontage_project_dir": "C:\\Workspace\\Repos\\OpenMontage\\projects\\20260628-063212-montage-dry-run-openmontage-handoff",
+  "files": {
+    "job_handoff": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-063212-montage-dry-run\\exports\\openmontage-handoff.json",
+    "job_editor_handoff": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-063212-montage-dry-run\\exports\\editor-handoff.md",
+    "job_shotcut_notes": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-063212-montage-dry-run\\editor-handoff\\shotcut-notes.txt",
+    "job_resolve_timeline": "C:\\Workspace\\Repos\\storyboard-video-studio\\bridge-jobs\\20260628-063212-montage-dry-run\\editor-handoff\\resolve-timeline.csv",
+    "openmontage_storyboard": "C:\\Workspace\\Repos\\OpenMontage\\projects\\20260628-063212-montage-dry-run-openmontage-handoff\\storyboard\\storyboard-handoff.json"
+  }
+}

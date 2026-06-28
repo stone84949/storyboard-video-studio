@@ -1,0 +1,1 @@
+python scripts/render_hyperframes_job.py bridge-jobs\20260628-060834-codex-live-render-smoke/project.json --target short-shorts --quality draft

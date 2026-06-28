@@ -1,0 +1,10 @@
+{
+  "index": 1,
+  "id": "scene-001",
+  "title": "Hook",
+  "narration": "A strange photo appeared in the old archive.",
+  "duration": 4,
+  "vo_seconds": 3.2,
+  "asset": "archive-photo.jpg",
+  "motion": "slow push in"
+}

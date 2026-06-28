@@ -1,0 +1,12 @@
+{
+  "index": 2,
+  "narration": "Proof line",
+  "title": "Proof",
+  "duration": 3.2,
+  "assetUrl": "proof.jpg",
+  "id": "scene-02",
+  "motionPreset": "pan-left-right",
+  "asset": "proof.jpg",
+  "motion": "pan-left-right",
+  "vo_seconds": 3.2
+}
