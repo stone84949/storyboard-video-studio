@@ -10,7 +10,9 @@ render commands.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
+import mimetypes
 import os
 import re
 import subprocess
@@ -18,17 +20,21 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_JOBS_ROOT = REPO_ROOT / "bridge-jobs"
-VALID_TARGETS = {"short-shorts", "longer-shorts", "montage"}
+VIDEOS_ROOT = REPO_ROOT / "videos"
+MAX_UPLOAD_BYTES = 30 * 1024 * 1024
+UPLOAD_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".bmp"}
+VALID_TARGETS = {"short-shorts", "longer-shorts", "long-shorts", "montage"}
+VALID_ENGINES = {"hyperframes", "remotion", "openmontage"}
 REQUIRED_FIELDS = ("machine", "engine", "run_label", "execute", "payload")
 
-PIPELINE_COMMANDS = {
-    "short-shorts": "python scripts/materialize_assets.py {job_dir}/project.json --provider auto && python scripts/render_hyperframes_job.py {job_dir}/project.json --target short-shorts --quality draft",
-    "longer-shorts": "python scripts/materialize_assets.py {job_dir}/project.json --provider auto && python scripts/render_hyperframes_job.py {job_dir}/project.json --target longer-shorts --quality draft",
-    "montage": "python scripts/prepare_montage_handoff.py {job_dir}/project.json",
-}
+MATERIALIZE_CMD = "python scripts/materialize_assets.py {job_dir}/project.json --provider auto"
+RENDER_HYPERFRAMES_CMD = "python scripts/render_hyperframes_job.py {job_dir}/project.json --target {target} --quality draft"
+RENDER_REMOTION_CMD = "python scripts/render_remotion_job.py {job_dir}/project.json --target {target} --quality draft"
+MONTAGE_CMD = "python scripts/prepare_montage_handoff.py {job_dir}/project.json"
 
 
 def utc_now() -> str:
@@ -65,6 +71,10 @@ def pipeline_target(payload: dict[str, Any]) -> str:
         "longer": "longer-shorts",
         "longer-short": "longer-shorts",
         "longer-shorts": "longer-shorts",
+        "long": "long-shorts",
+        "long-short": "long-shorts",
+        "long-shorts": "long-shorts",
+        "long-form": "long-shorts",
         "montage": "montage",
     }
     normalized = aliases.get(target, target)
@@ -108,13 +118,41 @@ def normalized_storyboard_payload(payload: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
-def build_launch_command(target: str, job_id: str, execute: bool, job_dir: str | None = None) -> str:
+def normalize_engine(engine: str) -> str:
+    value = str(engine or "").strip().lower()
+    aliases = {"hyperframe": "hyperframes", "hyper-frames": "hyperframes", "remotion-studio": "remotion", "open-montage": "openmontage", "montage": "openmontage"}
+    return aliases.get(value, value) or "hyperframes"
+
+
+def build_materialize_command(job_dir: str) -> str:
+    return MATERIALIZE_CMD.format(job_dir=job_dir)
+
+
+def build_render_command(job_dir: str, target: str, engine: str = "hyperframes") -> str:
     target = pipeline_target({"pipeline_target": target})
+    engine = normalize_engine(engine)
+    if target == "montage" or engine == "openmontage":
+        return MONTAGE_CMD.format(job_dir=job_dir)
+    if engine == "remotion":
+        render_target = target if target != "montage" else "long-shorts"
+        return RENDER_REMOTION_CMD.format(job_dir=job_dir, target=render_target)
+    render_target = target if target != "montage" else "longer-shorts"
+    return RENDER_HYPERFRAMES_CMD.format(job_dir=job_dir, target=render_target)
+
+
+def build_launch_command(target: str, job_id: str, execute: bool, job_dir: str | None = None, engine: str = "hyperframes") -> str:
+    target = pipeline_target({"pipeline_target": target})
+    engine = normalize_engine(engine)
     job_dir_value = job_dir or f"bridge-jobs/{job_id}"
-    command = PIPELINE_COMMANDS[target].format(job_dir=job_dir_value)
+
+    if target == "montage" or engine == "openmontage":
+        command = build_render_command(job_dir_value, target, engine)
+    else:
+        command = build_materialize_command(job_dir_value) + " && " + build_render_command(job_dir_value, target, engine)
+
     if execute:
         return command
-    return f"DRY RUN only for {target}: {command}"
+    return f"DRY RUN only for {engine}/{target}: {command}"
 
 
 def scene_filename(index: int, scene: dict[str, Any]) -> str:
@@ -122,7 +160,7 @@ def scene_filename(index: int, scene: dict[str, Any]) -> str:
     return f"{index:03d}-{slugify(scene_id, f'scene-{index:03d}')}.json"
 
 
-def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT) -> dict[str, Any]:
+def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT, action: str = "full") -> dict[str, Any]:
     validate_launch_request(request)
     original_payload = request["payload"]
     payload = normalized_storyboard_payload(original_payload)
@@ -142,13 +180,18 @@ def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_RO
     execute_requested = bool(request.get("execute"))
     live_execution_enabled = os.environ.get("STORYBOARD_BRIDGE_LIVE") == "1"
     should_execute = execute_requested and live_execution_enabled
-    command = build_launch_command(target, job_id, execute=should_execute, job_dir=str(job_dir))
+    engine = normalize_engine(request.get("engine"))
+    if action == "materialize":
+        base_command = build_materialize_command(str(job_dir))
+        command = base_command if should_execute else f"DRY RUN only for {engine}/{target} (materialize): {base_command}"
+    else:
+        command = build_launch_command(target, job_id, execute=should_execute, job_dir=str(job_dir), engine=engine)
 
     project = {
         "job_id": job_id,
         "created_at": utc_now(),
         "machine": request["machine"],
-        "engine": request["engine"],
+        "engine": engine,
         "run_label": label,
         "execute_requested": execute_requested,
         "live_execution_enabled": live_execution_enabled,
@@ -198,6 +241,13 @@ def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_RO
         }
         (logs_dir / "execution.log").write_text(completed.stdout + completed.stderr, encoding="utf-8")
 
+    materialized = []
+    if action == "materialize":
+        try:
+            materialized = read_job(job_id, jobs_root)["scenes"]
+        except Exception:
+            materialized = []
+
     return {
         "ok": True,
         "status": "executed" if should_execute else "dry_run",
@@ -205,6 +255,183 @@ def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_RO
         "job_dir": str(job_dir),
         "pipeline_target": target,
         "command": command,
+        "execution": execution,
+        "scenes": materialized,
+    }
+
+
+def decode_upload_data(data: str) -> bytes:
+    payload = data.strip()
+    if payload.startswith("data:"):
+        _, _, payload = payload.partition(",")
+    return base64.b64decode(payload, validate=False)
+
+
+def safe_extension(filename: str, fallback: str = ".png") -> str:
+    ext = Path(filename or "").suffix.lower()
+    if ext == ".jpg":
+        ext = ".jpg"
+    return ext if ext in UPLOAD_EXTENSIONS else fallback
+
+
+def create_asset_upload(request: dict[str, Any]) -> dict[str, Any]:
+    project_id = slugify(str(request.get("project_id") or ""), "untitled-project")
+    scene_id = slugify(str(request.get("scene_id") or "scene"), "scene")
+    filename = str(request.get("filename") or "image.png")
+    data = request.get("data")
+    if not isinstance(data, str) or not data:
+        raise ValueError("upload requires base64 'data'")
+
+    raw = decode_upload_data(data)
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise ValueError("upload exceeds size limit")
+
+    project_dir = (VIDEOS_ROOT / project_id).resolve()
+    if not str(project_dir).startswith(str(VIDEOS_ROOT.resolve())):
+        raise ValueError("invalid project path")
+    uploads_dir = project_dir / "assets" / "images" / "uploads"
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+
+    ext = safe_extension(filename)
+    stem = slugify(Path(filename).stem, "image")
+    name = f"{scene_id}-{stem}{ext}"
+    dest = uploads_dir / name
+    dest.write_bytes(raw)
+
+    rel_path = f"assets/images/uploads/{name}"
+    return {
+        "ok": True,
+        "project_id": project_id,
+        "scene_id": scene_id,
+        "path": rel_path,
+        "abs": str(dest),
+        "url": f"/assets/{project_id}/{rel_path}",
+        "bytes": len(raw),
+    }
+
+
+def resolve_served_asset(path: str) -> Path | None:
+    rel = unquote(path[len("/assets/"):]).lstrip("/")
+    if not rel:
+        return None
+    target = (VIDEOS_ROOT / rel).resolve()
+    root = str(VIDEOS_ROOT.resolve())
+    if not str(target).startswith(root) or not target.is_file():
+        return None
+    return target
+
+
+def resolve_served_job_asset(path: str, jobs_root: Path) -> Path | None:
+    rel = unquote(path[len("/jobs/"):]).lstrip("/")
+    if not rel:
+        return None
+    target = (jobs_root / rel).resolve()
+    root = str(jobs_root.resolve())
+    if not str(target).startswith(root) or not target.is_file():
+        return None
+    return target
+
+
+def job_image_url(job_id: str, rel_asset: str) -> str:
+    rel = str(rel_asset or "").replace("\\", "/").lstrip("/")
+    return f"/jobs/{job_id}/{rel}" if rel else ""
+
+
+def read_job(job_id: str, jobs_root: Path) -> dict[str, Any]:
+    job_dir = (jobs_root / job_id).resolve()
+    root = str(jobs_root.resolve())
+    if not job_id or not str(job_dir).startswith(root) or not job_dir.is_dir():
+        raise ValueError(f"unknown job: {job_id!r}")
+    project = json.loads((job_dir / "project.json").read_text(encoding="utf-8"))
+    manifest_path = job_dir / "exports" / "asset-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {"assets": []}
+    asset_by_id = {str(a.get("scene_id")): a for a in manifest.get("assets", [])}
+
+    payload = project.get("payload") if isinstance(project.get("payload"), dict) else project
+    storyboard = payload.get("storyboard") if isinstance(payload.get("storyboard"), dict) else payload
+    scenes_out: list[dict[str, Any]] = []
+    for index, scene in enumerate(storyboard.get("scenes") or [], start=1):
+        sid = str(scene.get("id") or scene.get("scene_id") or f"scene-{index:03d}")
+        entry = asset_by_id.get(sid, {})
+        rel_asset = entry.get("asset") or ""
+        scenes_out.append({
+            "scene_id": sid,
+            "title": scene.get("title") or scene.get("shot_name") or f"Scene {index}",
+            "image_url": job_image_url(job_id, rel_asset),
+            "abs": str((job_dir / rel_asset)) if rel_asset else "",
+            "status": entry.get("status") or "pending",
+            "notes": entry.get("notes") or "",
+        })
+    return {
+        "ok": True,
+        "job_id": job_id,
+        "pipeline_target": project.get("pipeline_target"),
+        "scenes": scenes_out,
+    }
+
+
+def run_render_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT) -> dict[str, Any]:
+    job_id = str(request.get("job_id") or "")
+    job_dir = (jobs_root / job_id).resolve()
+    root = str(jobs_root.resolve())
+    if not job_id or not str(job_dir).startswith(root) or not job_dir.is_dir():
+        raise ValueError(f"unknown job for render: {job_id!r}")
+
+    project_path = job_dir / "project.json"
+    project = json.loads(project_path.read_text(encoding="utf-8"))
+
+    reviewed = request.get("payload") or {}
+    reviewed_scenes: dict[str, dict[str, Any]] = {}
+    if isinstance(reviewed, dict) and (reviewed.get("scenes") or reviewed.get("storyboard")):
+        norm = normalized_storyboard_payload(reviewed)
+        for scene in norm.get("scenes", []):
+            sid = str(scene.get("id") or scene.get("scene_id") or "")
+            if sid:
+                reviewed_scenes[sid] = scene
+
+    payload = project.get("payload") if isinstance(project.get("payload"), dict) else project
+    storyboard = payload.get("storyboard") if isinstance(payload.get("storyboard"), dict) else payload
+    for index, scene in enumerate(storyboard.get("scenes") or [], start=1):
+        sid = str(scene.get("id") or scene.get("scene_id") or f"scene-{index:03d}")
+        reviewed_scene = reviewed_scenes.get(sid)
+        new_asset = reviewed_scene.get("asset") if reviewed_scene else ""
+        if new_asset:
+            scene["asset"] = new_asset
+            scene["assetUrl"] = new_asset
+            scene["asset_url"] = new_asset
+            scene["asset_state"] = "approved"
+            scene["assetState"] = "approved"
+    project_path.write_text(json.dumps(project, indent=2), encoding="utf-8")
+
+    target = project.get("pipeline_target") or "short-shorts"
+    engine = normalize_engine(project.get("engine") or request.get("engine") or "hyperframes")
+    execute_requested = bool(request.get("execute"))
+    live = os.environ.get("STORYBOARD_BRIDGE_LIVE") == "1"
+    should_execute = execute_requested and live
+
+    command = build_materialize_command(str(job_dir)) + " && " + build_render_command(str(job_dir), target, engine)
+    (job_dir / "launch-command.txt").write_text(command + "\n", encoding="utf-8")
+
+    execution = {"ran": False, "returncode": None, "stdout": "", "stderr": ""}
+    if should_execute:
+        (job_dir / "logs").mkdir(exist_ok=True)
+        completed = subprocess.run(command, cwd=REPO_ROOT, shell=True, text=True, capture_output=True, timeout=1800)
+        execution = {
+            "ran": True,
+            "returncode": completed.returncode,
+            "stdout": completed.stdout,
+            "stderr": completed.stderr,
+        }
+        (job_dir / "logs" / "render-execution.log").write_text(completed.stdout + completed.stderr, encoding="utf-8")
+
+    final = job_dir / "exports" / "final.mp4"
+    return {
+        "ok": True,
+        "status": "executed" if should_execute else "dry_run",
+        "job_id": job_id,
+        "job_dir": str(job_dir),
+        "command": command,
+        "final_video": f"/jobs/{job_id}/exports/final.mp4" if final.exists() else "",
         "execution": execution,
     }
 
@@ -226,7 +453,40 @@ class BridgeHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self) -> None:  # noqa: N802
         self._send_json(200, {"ok": True})
 
+    def _send_file(self, path: Path) -> None:
+        data = path.read_bytes()
+        content_type = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(data)
+
     def do_GET(self) -> None:  # noqa: N802
+        if self.path.startswith("/assets/"):
+            target = resolve_served_asset(self.path.split("?", 1)[0])
+            if target is None:
+                self._send_json(404, {"ok": False, "error": "asset not found"})
+                return
+            self._send_file(target)
+            return
+        if self.path.startswith("/jobs/"):
+            target = resolve_served_job_asset(self.path.split("?", 1)[0], self.jobs_root)
+            if target is None:
+                self._send_json(404, {"ok": False, "error": "job asset not found"})
+                return
+            self._send_file(target)
+            return
+        if self.path.startswith("/api/job"):
+            from urllib.parse import urlparse, parse_qs
+            job_id = (parse_qs(urlparse(self.path).query).get("id") or [""])[0]
+            try:
+                self._send_json(200, read_job(job_id, self.jobs_root))
+            except Exception as exc:
+                self._send_json(404, {"ok": False, "error": str(exc)})
+            return
         if self.path in {"/api/health", "/api/status"}:
             jobs = []
             if self.jobs_root.exists():
@@ -238,13 +498,20 @@ class BridgeHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"ok": False, "error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
-        if self.path != "/api/launch":
+        if self.path not in {"/api/launch", "/api/asset-upload"}:
             self._send_json(404, {"ok": False, "error": "not found"})
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
             request = json.loads(self.rfile.read(length).decode("utf-8"))
-            result = create_launch_job(request, self.jobs_root)
+            if self.path == "/api/asset-upload":
+                result = create_asset_upload(request)
+            elif request.get("action") == "materialize":
+                result = create_launch_job(request, self.jobs_root, action="materialize")
+            elif request.get("action") == "render":
+                result = run_render_job(request, self.jobs_root)
+            else:
+                result = create_launch_job(request, self.jobs_root)
             self._send_json(200, result)
         except Exception as exc:  # keep local bridge failures visible to UI
             self._send_json(400, {"ok": False, "error": str(exc)})
