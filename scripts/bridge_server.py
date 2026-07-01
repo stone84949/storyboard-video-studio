@@ -309,6 +309,17 @@ def resolve_served_asset(path: str) -> Path | None:
     return target
 
 
+def resolve_served_job_asset(path: str, jobs_root: Path) -> Path | None:
+    rel = unquote(path[len("/jobs/"):]).lstrip("/")
+    if not rel:
+        return None
+    target = (jobs_root / rel).resolve()
+    root = str(jobs_root.resolve())
+    if not str(target).startswith(root) or not target.is_file():
+        return None
+    return target
+
+
 class BridgeHandler(BaseHTTPRequestHandler):
     jobs_root = DEFAULT_JOBS_ROOT
 
@@ -342,6 +353,13 @@ class BridgeHandler(BaseHTTPRequestHandler):
             target = resolve_served_asset(self.path.split("?", 1)[0])
             if target is None:
                 self._send_json(404, {"ok": False, "error": "asset not found"})
+                return
+            self._send_file(target)
+            return
+        if self.path.startswith("/jobs/"):
+            target = resolve_served_job_asset(self.path.split("?", 1)[0], self.jobs_root)
+            if target is None:
+                self._send_json(404, {"ok": False, "error": "job asset not found"})
                 return
             self._send_file(target)
             return

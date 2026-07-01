@@ -133,6 +133,23 @@ class BridgeWorkflowTests(unittest.TestCase):
         self.assertIn("materialize_assets.py", short_command)
         self.assertIn("render_hyperframes_job.py", short_command)
 
+    def test_resolve_served_job_asset_guards_traversal(self):
+        bridge = load_bridge()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            asset = root / "job-1" / "assets" / "images" / "materialized" / "001.png"
+            asset.parent.mkdir(parents=True, exist_ok=True)
+            asset.write_bytes(b"\x89PNG\r\n")
+
+            ok = bridge.resolve_served_job_asset(
+                "/jobs/job-1/assets/images/materialized/001.png", root
+            )
+            self.assertIsNotNone(ok)
+            self.assertEqual(ok.read_bytes(), b"\x89PNG\r\n")
+
+            self.assertIsNone(bridge.resolve_served_job_asset("/jobs/../secret.txt", root))
+            self.assertIsNone(bridge.resolve_served_job_asset("/jobs/job-1/missing.png", root))
+
 
 if __name__ == "__main__":
     unittest.main()
