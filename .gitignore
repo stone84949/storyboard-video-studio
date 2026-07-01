@@ -26,3 +26,4 @@ bridge-jobs/_library/
 .env
 .venv/
 node_modules/
+start-bridge-live.bat
