@@ -186,6 +186,25 @@ class BridgeWorkflowTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 bridge.read_job("does-not-exist", Path(tmp))
 
+    def test_read_job_without_manifest_returns_pending_scenes(self):
+        bridge = load_bridge()
+        with tempfile.TemporaryDirectory() as tmp:
+            request = {
+                "machine": "BEAST",
+                "engine": "hyperframes",
+                "run_label": "read job pending test",
+                "execute": False,
+                "payload": self.realistic_payload(),
+            }
+            result = bridge.create_launch_job(request, Path(tmp))
+            job_id = result["job_id"]
+
+            out = bridge.read_job(job_id, Path(tmp))
+            self.assertEqual(len(out["scenes"]), 2)
+            for scene in out["scenes"]:
+                self.assertEqual(scene["image_url"], "")
+                self.assertEqual(scene["status"], "pending")
+
 
 if __name__ == "__main__":
     unittest.main()
