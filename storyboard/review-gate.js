@@ -21,7 +21,7 @@
     ((result && result.scenes) || []).forEach(function (r) { byId[r.scene_id] = r; });
     return (scenes || []).map(function (s) {
       var r = byId[s.id];
-      if (!r) return s;
+      if (!r) return Object.assign({}, s);
       var copy = Object.assign({}, s);
       if (r.image_url) {
         copy.previewUrl = base + r.image_url;

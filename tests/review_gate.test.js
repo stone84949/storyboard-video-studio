@@ -31,4 +31,8 @@ assert.strictEqual(marked[0].reviewState, 'approved', 'approve sets state');
 // resetOnSwap
 assert.strictEqual(gate.resetOnSwap({ id: 'a', reviewState: 'approved' }).reviewState, 'needs-review', 'swap resets review');
 
+// reviewStateFor
+assert.strictEqual(gate.reviewStateFor({ id: 'x' }), 'needs-review', 'default review state');
+assert.strictEqual(gate.reviewStateFor({ id: 'x', reviewState: 'flagged' }), 'flagged', 'explicit review state passes through');
+
 console.log('review-gate tests passed');
