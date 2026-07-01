@@ -368,6 +368,72 @@ def read_job(job_id: str, jobs_root: Path) -> dict[str, Any]:
     }
 
 
+def run_render_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT) -> dict[str, Any]:
+    job_id = str(request.get("job_id") or "")
+    job_dir = (jobs_root / job_id).resolve()
+    root = str(jobs_root.resolve())
+    if not job_id or not str(job_dir).startswith(root) or not job_dir.is_dir():
+        raise ValueError(f"unknown job for render: {job_id!r}")
+
+    project_path = job_dir / "project.json"
+    project = json.loads(project_path.read_text(encoding="utf-8"))
+
+    reviewed = request.get("payload") or {}
+    reviewed_scenes: dict[str, dict[str, Any]] = {}
+    if isinstance(reviewed, dict) and (reviewed.get("scenes") or reviewed.get("storyboard")):
+        norm = normalized_storyboard_payload(reviewed)
+        for scene in norm.get("scenes", []):
+            sid = str(scene.get("id") or scene.get("scene_id") or "")
+            if sid:
+                reviewed_scenes[sid] = scene
+
+    payload = project.get("payload") if isinstance(project.get("payload"), dict) else project
+    storyboard = payload.get("storyboard") if isinstance(payload.get("storyboard"), dict) else payload
+    for index, scene in enumerate(storyboard.get("scenes") or [], start=1):
+        sid = str(scene.get("id") or scene.get("scene_id") or f"scene-{index:03d}")
+        reviewed_scene = reviewed_scenes.get(sid)
+        new_asset = reviewed_scene.get("asset") if reviewed_scene else ""
+        if new_asset:
+            scene["asset"] = new_asset
+            scene["assetUrl"] = new_asset
+            scene["asset_url"] = new_asset
+            scene["asset_state"] = "approved"
+            scene["assetState"] = "approved"
+    project_path.write_text(json.dumps(project, indent=2), encoding="utf-8")
+
+    target = project.get("pipeline_target") or "short-shorts"
+    engine = normalize_engine(project.get("engine") or request.get("engine") or "hyperframes")
+    execute_requested = bool(request.get("execute"))
+    live = os.environ.get("STORYBOARD_BRIDGE_LIVE") == "1"
+    should_execute = execute_requested and live
+
+    command = build_materialize_command(str(job_dir)) + " && " + build_render_command(str(job_dir), target, engine)
+    (job_dir / "launch-command.txt").write_text(command + "\n", encoding="utf-8")
+
+    execution = {"ran": False, "returncode": None, "stdout": "", "stderr": ""}
+    if should_execute:
+        (job_dir / "logs").mkdir(exist_ok=True)
+        completed = subprocess.run(command, cwd=REPO_ROOT, shell=True, text=True, capture_output=True, timeout=1800)
+        execution = {
+            "ran": True,
+            "returncode": completed.returncode,
+            "stdout": completed.stdout,
+            "stderr": completed.stderr,
+        }
+        (job_dir / "logs" / "render-execution.log").write_text(completed.stdout + completed.stderr, encoding="utf-8")
+
+    final = job_dir / "exports" / "final.mp4"
+    return {
+        "ok": True,
+        "status": "executed" if should_execute else "dry_run",
+        "job_id": job_id,
+        "job_dir": str(job_dir),
+        "command": command,
+        "final_video": f"/jobs/{job_id}/exports/final.mp4" if final.exists() else "",
+        "execution": execution,
+    }
+
+
 class BridgeHandler(BaseHTTPRequestHandler):
     jobs_root = DEFAULT_JOBS_ROOT
 

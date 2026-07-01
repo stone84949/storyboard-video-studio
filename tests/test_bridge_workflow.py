@@ -224,6 +224,52 @@ class BridgeWorkflowTests(unittest.TestCase):
             self.assertIn("materialize_assets.py", command)
             self.assertNotIn("render_hyperframes_job.py", command)
 
+    def test_render_action_applies_reviewed_asset_and_builds_render_command(self):
+        bridge = load_bridge()
+        with tempfile.TemporaryDirectory() as tmp:
+            created = bridge.create_launch_job(
+                {
+                    "machine": "BEAST",
+                    "engine": "hyperframes",
+                    "run_label": "render action",
+                    "execute": False,
+                    "payload": self.realistic_payload(),
+                },
+                Path(tmp),
+            )
+            job_id = created["job_id"]
+
+            reviewed = {
+                "job_id": job_id,
+                "engine": "hyperframes",
+                "execute": False,
+                "payload": {
+                    "storyboard": {
+                        "id": "x",
+                        "title": "x",
+                        "aspect_ratio": "9:16",
+                        "scenes": [
+                            {"id": "scene-001", "title": "Cold open", "assetUrl": "https://real.example/site.jpg", "duration": 3.4},
+                            {"id": "scene-002", "title": "Reveal", "assetUrl": "lab-notes.jpg", "duration": 4.1},
+                        ],
+                    }
+                },
+            }
+            result = bridge.run_render_job(reviewed, Path(tmp))
+            self.assertEqual(result["status"], "dry_run")
+            self.assertIn("render_hyperframes_job.py", result["command"])
+
+            project = json.loads((Path(created["job_dir"]) / "project.json").read_text(encoding="utf-8"))
+            payload = project["payload"]
+            storyboard = payload.get("storyboard", payload)
+            self.assertEqual(storyboard["scenes"][0]["asset"], "https://real.example/site.jpg")
+
+    def test_render_action_unknown_job_raises(self):
+        bridge = load_bridge()
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError):
+                bridge.run_render_job({"job_id": "nope", "payload": {}}, Path(tmp))
+
 
 if __name__ == "__main__":
     unittest.main()
