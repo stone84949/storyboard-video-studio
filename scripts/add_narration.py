@@ -239,7 +239,8 @@ def add_narration(project_path: Path, voice: str, speed: float, music: str | Non
                         log.write("\nkaraoke unavailable; falling back to simple captions\n")
                         cues = []
                         break
-                    cues.extend(captions_lib.karaoke_cues(tj, scene_start_ms=item["start_ms"]))
+                    cues.extend(captions_lib.karaoke_cues_for_scene(
+                        item["text"], tj.get("words") or [], scene_start_ms=item["start_ms"]))
             if effective_mode == "simple":
                 cues = captions_lib.simple_cues(captions_lib_scenes(project))
             if cues:

@@ -83,6 +83,49 @@ def karaoke_cues(transcribe_json, scene_start_ms: int = 0, max_words: int = 4) -
     return cues
 
 
+def karaoke_cues_for_scene(script_text, whisper_words, scene_start_ms: int = 0, max_words: int = 4) -> list[dict[str, Any]]:
+    """Karaoke cues that ALWAYS show the author's exact script text.
+
+    ASR (whisper) can mis-hear proper nouns, so we never display its guessed
+    words. We take the known ``script_text`` for the words and use the whisper
+    timings only: paired 1:1 when the word counts match, otherwise the script
+    words are evenly distributed across the actual spoken span. Returns [] when
+    there is no script or no timing to work with (caller falls back to simple).
+    """
+    script_words = str(script_text or "").split()
+    words = whisper_words or []
+    if not script_words or not words:
+        return []
+    if len(words) == len(script_words):
+        timed = [
+            {"word": script_words[i],
+             "t0": int(round(float(words[i].get("start", 0)) * 1000)),
+             "t1": int(round(float(words[i].get("end", 0)) * 1000))}
+            for i in range(len(script_words))
+        ]
+    else:
+        # Even-distribute the script words across the span whisper actually heard.
+        span0 = float(words[0].get("start", 0))
+        span1 = float(words[-1].get("end", span0 + len(script_words) * 0.4))
+        total_ms = max(1, int(round((span1 - span0) * 1000)))
+        base = int(round(span0 * 1000))
+        each = max(1, total_ms // len(script_words))
+        timed = [
+            {"word": w,
+             "t0": base + i * each,
+             "t1": base + ((i + 1) * each if i < len(script_words) - 1 else total_ms)}
+            for i, w in enumerate(script_words)
+        ]
+    for t in timed:
+        t["t0"] += scene_start_ms
+        t["t1"] += scene_start_ms
+    cues: list[dict[str, Any]] = []
+    for i in range(0, len(timed), max_words):
+        group = timed[i:i + max_words]
+        cues.append({"start_ms": group[0]["t0"], "end_ms": group[-1]["t1"], "words": group})
+    return cues
+
+
 def build_ass(cues: list[dict[str, Any]], mode: str, width: int, height: int) -> str:
     body = _header(width, height)
     for cue in cues:

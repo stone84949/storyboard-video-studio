@@ -62,6 +62,34 @@ class KaraokeCuesTests(unittest.TestCase):
         self.assertEqual(c.karaoke_cues({"ok": False, "skipped": True}, 0), [])
 
 
+class KaraokeForSceneTests(unittest.TestCase):
+    def test_uses_script_words_with_whisper_timing_when_counts_match(self):
+        c = load()
+        whisper = [
+            {"word": "Hegrah", "start": 0.0, "end": 0.3},   # ASR mis-hear
+            {"word": "tombs", "start": 0.3, "end": 0.8},
+        ]
+        cues = c.karaoke_cues_for_scene("Hegra tombs", whisper, scene_start_ms=1000, max_words=4)
+        words = cues[0]["words"]
+        # displays the SCRIPT text, not the ASR guess, but keeps whisper timing
+        self.assertEqual([w["word"] for w in words], ["Hegra", "tombs"])
+        self.assertEqual(words[0]["t0"], 1000)
+        self.assertEqual(words[1]["t1"], 1800)
+
+    def test_even_distributes_script_when_counts_mismatch(self):
+        c = load()
+        whisper = [{"word": "a", "start": 0.0, "end": 1.0}]  # 1 word heard
+        cues = c.karaoke_cues_for_scene("one two", whisper, scene_start_ms=0, max_words=4)
+        words = cues[0]["words"]
+        self.assertEqual([w["word"] for w in words], ["one", "two"])   # correct script text
+        self.assertTrue(words[0]["t1"] > words[0]["t0"])               # non-degenerate timing
+
+    def test_no_timing_or_no_text_yields_empty(self):
+        c = load()
+        self.assertEqual(c.karaoke_cues_for_scene("hi", [], 0), [])
+        self.assertEqual(c.karaoke_cues_for_scene("", [{"word": "x", "start": 0, "end": 1}], 0), [])
+
+
 class KaraokeAssTests(unittest.TestCase):
     def test_karaoke_ass_has_kf_and_colour_contrast(self):
         c = load()
