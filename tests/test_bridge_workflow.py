@@ -290,6 +290,15 @@ class BridgeWorkflowTests(unittest.TestCase):
             self.assertIn("render_hyperframes_job.py", result["command"])
             self.assertIn("add_narration.py", result["command"])
 
+    def test_narration_command_threads_and_validates_captions_music(self):
+        bridge = load_bridge()
+        cmd = bridge.build_narration_command("bridge-jobs/x", "bm_george", "karaoke", "")
+        self.assertIn("--captions karaoke", cmd)
+        # bad captions value falls back to the default
+        self.assertIn("--captions karaoke", bridge.build_narration_command("x", "bm_george", "evil; rm", ""))
+        # a music path with shell metacharacters is dropped
+        self.assertNotIn(";", bridge.build_narration_command("x", "bm_george", "simple", "a; rm -rf /"))
+
 
 if __name__ == "__main__":
     unittest.main()

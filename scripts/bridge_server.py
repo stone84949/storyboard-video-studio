@@ -37,7 +37,7 @@ MATERIALIZE_CMD = "python scripts/materialize_assets.py {job_dir}/project.json -
 RENDER_HYPERFRAMES_CMD = "python scripts/render_hyperframes_job.py {job_dir}/project.json --target {target} --quality draft"
 RENDER_REMOTION_CMD = "python scripts/render_remotion_job.py {job_dir}/project.json --target {target} --quality draft"
 MONTAGE_CMD = "python scripts/prepare_montage_handoff.py {job_dir}/project.json"
-NARRATION_CMD = "python scripts/add_narration.py {job_dir}/project.json --voice {voice}"
+NARRATION_CMD = "python scripts/add_narration.py {job_dir}/project.json --voice {voice} --captions {captions}{music}"
 
 
 def utc_now() -> str:
@@ -150,10 +150,14 @@ def build_render_command(job_dir: str, target: str, engine: str = "hyperframes")
     return RENDER_HYPERFRAMES_CMD.format(job_dir=job_dir, target=render_target)
 
 
-def build_narration_command(job_dir: str, voice: str = "bm_george") -> str:
+def build_narration_command(job_dir: str, voice: str = "bm_george", captions: str = "karaoke", music: str = "") -> str:
     # voice flows into a shell=True command; allow only safe voice-id characters.
     safe_voice = voice if re.fullmatch(r"[a-z_]+", str(voice or "")) else "bm_george"
-    return NARRATION_CMD.format(job_dir=job_dir, voice=safe_voice)
+    safe_captions = captions if str(captions) in {"karaoke", "simple", "off"} else "karaoke"
+    music_arg = ""
+    if music and re.fullmatch(r"[A-Za-z0-9_./\\:\- ]+", str(music)):
+        music_arg = f' --music "{music}"'
+    return NARRATION_CMD.format(job_dir=job_dir, voice=safe_voice, captions=safe_captions, music=music_arg)
 
 
 def build_launch_command(target: str, job_id: str, execute: bool, job_dir: str | None = None, engine: str = "hyperframes") -> str:
@@ -430,7 +434,12 @@ def run_render_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT)
     # the rendered mp4 comes out with a voice track. add_narration.py exits 0 even
     # when it skips (no narration / TTS unavailable), so it never fails the render.
     if engine in {"hyperframes", "remotion"} and target != "montage":
-        command += " && " + build_narration_command(str(job_dir), str(request.get("voice") or "bm_george"))
+        command += " && " + build_narration_command(
+            str(job_dir),
+            str(request.get("voice") or "bm_george"),
+            str(request.get("captions") or "karaoke"),
+            str(request.get("music") or ""),
+        )
     (job_dir / "launch-command.txt").write_text(command + "\n", encoding="utf-8")
 
     execution = {"ran": False, "returncode": None, "stdout": "", "stderr": ""}
