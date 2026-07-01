@@ -69,6 +69,27 @@ class GenerateImageTests(unittest.TestCase):
             self.assertFalse(result["ok"])
             self.assertIn("STORYBOARD_BRIDGE_LIVE", result["error"])
 
+    def test_provider_failure_returns_error_and_no_placeholder(self):
+        mat = self.bridge._load_materialize()
+        orig_choose = mat.choose_provider
+        orig_run = mat.run_openmontage_provider
+        mat.choose_provider = lambda preferred: "flux"
+        mat.run_openmontage_provider = lambda provider, prompt, output_path, aspect_ratio: (False, "provider boom")
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                result = self.bridge.generate_one_image(
+                    {"prompt": "x", "aspect_ratio": "9:16"}, Path(tmp)
+                )
+                self.assertFalse(result["ok"])
+                self.assertIn("boom", result["error"])
+                png_files = list(Path(tmp).rglob("*.png"))
+                svg_files = list(Path(tmp).rglob("*.svg"))
+                self.assertEqual(png_files, [])
+                self.assertEqual(svg_files, [])
+        finally:
+            mat.choose_provider = orig_choose
+            mat.run_openmontage_provider = orig_run
+
 
 class SafeIntTests(unittest.TestCase):
     def setUp(self):

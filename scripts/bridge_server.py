@@ -464,7 +464,8 @@ def generate_one_image(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_R
     mat = _load_materialize()
     provider = mat.choose_provider("auto")
 
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+    # disposable scratch; safe to clear when no scene references it
     lib_dir = (jobs_root / "_library" / f"{stamp}-{slugify(prompt)[:24]}")
     lib_dir.mkdir(parents=True, exist_ok=True)
     dest = lib_dir / "image.png"

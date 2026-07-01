@@ -1,10 +1,14 @@
 # Render outputs
 out/
 videos/*/out/
+videos/*/exports/*.mp4
+videos/*/renders/
+remotion-studio/public/jobs/
 
 # Generated/local assets
 videos/*/assets/images/src/
 videos/*/assets/images/processed/
+videos/*/assets/images/materialized/
 videos/*/audio/
 
 # Logs and caches
@@ -14,6 +18,9 @@ __pycache__/
 dashboard/data/*.json
 dashboard/*.log
 dashboard/*.png
+
+# generated image scratch (find-images panel)
+bridge-jobs/_library/
 
 # Local environment
 .env
