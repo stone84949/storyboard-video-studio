@@ -70,6 +70,23 @@ class GenerateImageTests(unittest.TestCase):
             self.assertIn("STORYBOARD_BRIDGE_LIVE", result["error"])
 
 
+class SafeIntTests(unittest.TestCase):
+    def setUp(self):
+        self.bridge = load_bridge()
+
+    def test_safe_int_valid_string(self):
+        result = self.bridge._safe_int("7", 3)
+        self.assertEqual(result, 7)
+
+    def test_safe_int_invalid_string(self):
+        result = self.bridge._safe_int("abc", 3)
+        self.assertEqual(result, 3)
+
+    def test_safe_int_none(self):
+        result = self.bridge._safe_int(None, 5)
+        self.assertEqual(result, 5)
+
+
 class SearchStockTests(unittest.TestCase):
     def setUp(self):
         self.bridge = load_bridge()
@@ -102,6 +119,21 @@ class SearchStockTests(unittest.TestCase):
         self.assertEqual(out["results"][0]["full"], "l1")
         self.assertEqual(out["results"][0]["credit"], "Ann")
         self.assertEqual(out["results"][1]["full"], "l2")
+
+    def test_non_dict_response_yields_empty(self):
+        fake = json.dumps([]).encode("utf-8")
+
+        class FakeResp(io.BytesIO):
+            def __enter__(self):
+                return self
+            def __exit__(self, *a):
+                return False
+
+        with mock.patch.dict(os.environ, {"PEXELS_API_KEY": "k"}, clear=False):
+            with mock.patch.object(self.bridge.urllib.request, "urlopen", return_value=FakeResp(fake)):
+                out = self.bridge.search_stock("mountains")
+        self.assertTrue(out["ok"])
+        self.assertEqual(out["results"], [])
 
 
 class SearchWebTests(unittest.TestCase):

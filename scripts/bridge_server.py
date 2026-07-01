@@ -43,6 +43,13 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _safe_int(value: Any, default: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def slugify(value: str, fallback: str = "storyboard-job") -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
     return slug[:80] or fallback
@@ -487,6 +494,8 @@ def search_stock(query: str, per_page: int = 15) -> dict[str, Any]:
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
+        if not isinstance(data, dict):
+            data = {}
     except Exception as exc:
         return {"ok": False, "error": f"stock search failed: {exc}"}
     results = []
@@ -516,6 +525,8 @@ def search_web(query: str, num: int = 10) -> dict[str, Any]:
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
+        if not isinstance(data, dict):
+            data = {}
     except Exception as exc:
         return {"ok": False, "error": f"web search failed: {exc}"}
     results = []
@@ -587,14 +598,14 @@ class BridgeHandler(BaseHTTPRequestHandler):
             from urllib.parse import urlparse, parse_qs
             qs = parse_qs(urlparse(self.path).query)
             query = (qs.get("q") or [""])[0]
-            per_page = int((qs.get("per_page") or ["15"])[0] or "15")
+            per_page = _safe_int((qs.get("per_page") or ["15"])[0], 15)
             self._send_json(200, search_stock(query, per_page))
             return
         if self.path.startswith("/api/search-web"):
             from urllib.parse import urlparse, parse_qs
             qs = parse_qs(urlparse(self.path).query)
             query = (qs.get("q") or [""])[0]
-            num = int((qs.get("num") or ["10"])[0] or "10")
+            num = _safe_int((qs.get("num") or ["10"])[0], 10)
             self._send_json(200, search_web(query, num))
             return
         if self.path in {"/api/health", "/api/status"}:
