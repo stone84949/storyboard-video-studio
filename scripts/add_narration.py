@@ -25,6 +25,7 @@ from typing import Any
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parent))
 import music as music_lib  # noqa: E402
+import captions as captions_lib  # noqa: E402
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +44,10 @@ def payload_ref(project: dict[str, Any]) -> dict[str, Any]:
     if isinstance(payload.get("storyboard"), dict):
         return payload["storyboard"]
     return payload
+
+
+def captions_lib_scenes(project: dict[str, Any]) -> list[dict[str, Any]]:
+    return (payload_ref(project).get("scenes") or [])
 
 
 def collect_narration(project: dict[str, Any]) -> list[dict[str, Any]]:
@@ -98,19 +103,27 @@ def build_ffmpeg_filter(items: list[dict[str, Any]]) -> str:
     return ";".join(parts + [mix])
 
 
-def build_ffmpeg_command(video: Path, wavs: list[Path], filter_complex: str, output: Path, music: Path | None = None) -> list[str]:
+def build_ffmpeg_command(video: Path, wavs: list[Path], filter_complex: str, output: Path, music: Path | None = None, ass_name: str | None = None) -> list[str]:
     ffmpeg = shutil.which("ffmpeg") or "ffmpeg"
     cmd = [ffmpeg, "-y", "-i", str(video)]
     for wav in wavs:
         cmd += ["-i", str(wav)]
     if music is not None:
         cmd += ["-stream_loop", "-1", "-i", str(music)]  # loop the track; -shortest trims
-    cmd += [
-        "-filter_complex", filter_complex,
-        "-map", "0:v", "-map", "[a]",
-        "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
-        "-shortest", str(output),
-    ]
+    if ass_name:
+        fc = f"{filter_complex};[0:v]subtitles={ass_name}[v]"
+        cmd += [
+            "-filter_complex", fc,
+            "-map", "[v]", "-map", "[a]",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+        ]
+    else:
+        cmd += [
+            "-filter_complex", filter_complex,
+            "-map", "0:v", "-map", "[a]",
+            "-c:v", "copy",
+        ]
+    cmd += ["-c:a", "aac", "-b:a", "192k", "-shortest", str(output)]
     return cmd
 
 
@@ -123,7 +136,7 @@ def synth_scene(text: str, out_wav: Path, voice: str, speed: float, log) -> bool
     return completed.returncode == 0 and out_wav.exists()
 
 
-def add_narration(project_path: Path, voice: str, speed: float, music: str | None = None) -> dict[str, Any]:
+def add_narration(project_path: Path, voice: str, speed: float, music: str | None = None, captions: str = "off") -> dict[str, Any]:
     project_path = project_path.resolve()
     job_dir = project_path.parent
     exports_dir = job_dir / "exports"
@@ -131,7 +144,7 @@ def add_narration(project_path: Path, voice: str, speed: float, music: str | Non
     logs_dir.mkdir(exist_ok=True)
     log_path = logs_dir / "narration.log"
 
-    summary = {"ok": True, "voice": voice, "scenes_voiced": 0, "output": "", "skipped": "", "music": ""}
+    summary = {"ok": True, "voice": voice, "scenes_voiced": 0, "output": "", "skipped": "", "music": "", "captions": ""}
 
     with log_path.open("a", encoding="utf-8") as log:
         final = exports_dir / "final.mp4"
@@ -182,11 +195,22 @@ def add_narration(project_path: Path, voice: str, speed: float, music: str | Non
         music_input_index = len(wavs) + 1 if track else None
         filt = music_lib.build_audio_filter(voiced, has_music=bool(track), music_input_index=music_input_index)
         narrated_tmp = exports_dir / "final-narrated.tmp.mp4"
-        cmd = build_ffmpeg_command(source_video, wavs, filt, narrated_tmp, music=track)
+
+        ass_name = ""
+        if captions and captions != "off":
+            cues = captions_lib.simple_cues(captions_lib_scenes(project))
+            if cues:
+                (exports_dir / "finish.ass").write_text(
+                    captions_lib.build_ass(cues, mode="simple", width=1080, height=1920), encoding="utf-8")
+                ass_name = "finish.ass"
+                summary["captions"] = "simple"
+
+        cmd = build_ffmpeg_command(source_video, wavs, filt, narrated_tmp, music=track, ass_name=ass_name or None)
         summary["music"] = track.name if track else ""
+        run_cwd = exports_dir if ass_name else REPO_ROOT
         log.write("\n$ " + " ".join(cmd) + "\n")
         try:
-            completed = subprocess.run(cmd, cwd=REPO_ROOT, text=True, capture_output=True, timeout=600)
+            completed = subprocess.run(cmd, cwd=run_cwd, text=True, capture_output=True, timeout=600)
             log.write(completed.stdout + completed.stderr)
             if completed.returncode != 0 or not narrated_tmp.exists():
                 raise RuntimeError(f"ffmpeg exited {completed.returncode}")
@@ -221,10 +245,11 @@ def main() -> int:
     parser.add_argument("--voice", default=DEFAULT_VOICE)
     parser.add_argument("--speed", type=float, default=1.0)
     parser.add_argument("--music", default=None, help="explicit music file, else music/ folders are used")
+    parser.add_argument("--captions", default="off", help="off | simple | karaoke")
     args = parser.parse_args()
 
     try:
-        summary = add_narration(args.project_json, args.voice, args.speed, music=args.music)
+        summary = add_narration(args.project_json, args.voice, args.speed, music=args.music, captions=args.captions)
     except Exception as exc:  # never fail the render chain
         print(f"WARNING: narration step skipped: {exc}", file=sys.stderr)
         return 0

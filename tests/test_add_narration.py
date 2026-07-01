@@ -91,6 +91,21 @@ class CommandTests(unittest.TestCase):
         self.assertIn("-shortest", cmd)
 
 
+class CaptionCommandTests(unittest.TestCase):
+    def test_ass_command_reencodes_and_maps_v(self):
+        an = load()
+        cmd = an.build_ffmpeg_command(Path("v.mp4"), [Path("a1.wav")], "AF", Path("out.mp4"), ass_name="finish.ass")
+        self.assertIn("subtitles=finish.ass", " ".join(cmd))
+        self.assertIn("libx264", cmd)
+        self.assertIn("[v]", cmd)
+
+    def test_no_caption_command_copies_video(self):
+        an = load()
+        cmd = an.build_ffmpeg_command(Path("v.mp4"), [Path("a1.wav")], "AF", Path("out.mp4"))
+        self.assertIn("copy", cmd)
+        self.assertNotIn("libx264", cmd)
+
+
 class PromoteIdempotencyTests(unittest.TestCase):
     """The rename/promote dance is the highest-risk code: re-running must never
     clobber the true silent master (regression guard for the data-loss bug)."""
