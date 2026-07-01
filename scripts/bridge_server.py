@@ -160,7 +160,7 @@ def scene_filename(index: int, scene: dict[str, Any]) -> str:
     return f"{index:03d}-{slugify(scene_id, f'scene-{index:03d}')}.json"
 
 
-def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT) -> dict[str, Any]:
+def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT, action: str = "full") -> dict[str, Any]:
     validate_launch_request(request)
     original_payload = request["payload"]
     payload = normalized_storyboard_payload(original_payload)
@@ -181,7 +181,11 @@ def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_RO
     live_execution_enabled = os.environ.get("STORYBOARD_BRIDGE_LIVE") == "1"
     should_execute = execute_requested and live_execution_enabled
     engine = normalize_engine(request.get("engine"))
-    command = build_launch_command(target, job_id, execute=should_execute, job_dir=str(job_dir), engine=engine)
+    if action == "materialize":
+        base_command = build_materialize_command(str(job_dir))
+        command = base_command if should_execute else f"DRY RUN only for {engine}/{target} (materialize): {base_command}"
+    else:
+        command = build_launch_command(target, job_id, execute=should_execute, job_dir=str(job_dir), engine=engine)
 
     project = {
         "job_id": job_id,
@@ -237,6 +241,13 @@ def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_RO
         }
         (logs_dir / "execution.log").write_text(completed.stdout + completed.stderr, encoding="utf-8")
 
+    materialized = []
+    if action == "materialize":
+        try:
+            materialized = read_job(job_id, jobs_root)["scenes"]
+        except Exception:
+            materialized = []
+
     return {
         "ok": True,
         "status": "executed" if should_execute else "dry_run",
@@ -245,6 +256,7 @@ def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_RO
         "pipeline_target": target,
         "command": command,
         "execution": execution,
+        "scenes": materialized if action == "materialize" else [],
     }
 
 
@@ -426,6 +438,10 @@ class BridgeHandler(BaseHTTPRequestHandler):
             request = json.loads(self.rfile.read(length).decode("utf-8"))
             if self.path == "/api/asset-upload":
                 result = create_asset_upload(request)
+            elif request.get("action") == "materialize":
+                result = create_launch_job(request, self.jobs_root, action="materialize")
+            elif request.get("action") == "render":
+                result = run_render_job(request, self.jobs_root)
             else:
                 result = create_launch_job(request, self.jobs_root)
             self._send_json(200, result)

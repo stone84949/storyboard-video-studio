@@ -205,6 +205,25 @@ class BridgeWorkflowTests(unittest.TestCase):
                 self.assertEqual(scene["image_url"], "")
                 self.assertEqual(scene["status"], "pending")
 
+    def test_materialize_action_writes_materialize_only_command(self):
+        bridge = load_bridge()
+        with tempfile.TemporaryDirectory() as tmp:
+            request = {
+                "machine": "BEAST",
+                "engine": "hyperframes",
+                "run_label": "materialize action",
+                "execute": False,
+                "action": "materialize",
+                "payload": self.realistic_payload(),
+            }
+            result = bridge.create_launch_job(request, Path(tmp), action="materialize")
+            self.assertEqual(result["status"], "dry_run")
+            self.assertIn("scenes", result)
+            self.assertEqual(len(result["scenes"]), 2)
+            command = (Path(result["job_dir"]) / "launch-command.txt").read_text(encoding="utf-8")
+            self.assertIn("materialize_assets.py", command)
+            self.assertNotIn("render_hyperframes_job.py", command)
+
 
 if __name__ == "__main__":
     unittest.main()
