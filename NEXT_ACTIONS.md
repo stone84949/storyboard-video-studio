@@ -1,5 +1,13 @@
 # Next Actions
 
+0. Narration audio (Phase 3) is live. Every HyperFrames/Remotion render now auto-adds
+   a spoken narration track via `scripts/add_narration.py` (HyperFrames local Kokoro
+   TTS + ffmpeg mux). One-time setup on a new machine (e.g. CyberPower):
+   `pip install kokoro-onnx soundfile` (ffmpeg + Node/npx must also be present).
+   Voice defaults to `bm_george`; change with `--voice`. Silent render is kept as
+   `exports/final-silent.mp4`. If TTS is unavailable the render still succeeds silent.
+   Not yet built: background music bed and word-level captions (Phase 3b).
+
 1. Prove one cloud/provider image generation lane once credentials are visible.
    - Current live command is:
      `python scripts/materialize_assets.py <job_dir>/project.json --provider auto`

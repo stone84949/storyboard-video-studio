@@ -59,10 +59,19 @@ class FilterTests(unittest.TestCase):
     def test_multi_scene_mixes_and_pads(self):
         an = load()
         f = an.build_ffmpeg_filter([{"start_ms": 0}, {"start_ms": 5000}])
-        self.assertIn("[1]adelay=0[a1]", f)
-        self.assertIn("[2]adelay=5000[a2]", f)
+        self.assertIn("[1]adelay=0:all=1[a1]", f)
+        self.assertIn("[2]adelay=5000:all=1[a2]", f)
         self.assertIn("amix=inputs=2:normalize=0", f)
         self.assertTrue(f.endswith("apad[a]"))
+
+    def test_multi_scene_exact_filter_string(self):
+        an = load()
+        f = an.build_ffmpeg_filter([{"start_ms": 0}, {"start_ms": 5000}])
+        self.assertEqual(
+            f,
+            "[1]adelay=0:all=1[a1];[2]adelay=5000:all=1[a2];"
+            "[a1][a2]amix=inputs=2:normalize=0:dropout_transition=0,apad[a]",
+        )
 
 
 class CommandTests(unittest.TestCase):
@@ -80,6 +89,53 @@ class CommandTests(unittest.TestCase):
         self.assertIn("[a]", cmd)
         self.assertIn("copy", cmd)
         self.assertIn("-shortest", cmd)
+
+
+class PromoteIdempotencyTests(unittest.TestCase):
+    """The rename/promote dance is the highest-risk code: re-running must never
+    clobber the true silent master (regression guard for the data-loss bug)."""
+
+    def _run_once(self, an, job, narrated_bytes):
+        import subprocess as _sp
+
+        def fake_synth(text, out_wav, voice, speed, log):
+            out_wav.write_bytes(b"WAV")
+            return True
+
+        def fake_ffmpeg(cmd, **kwargs):
+            Path(cmd[-1]).write_bytes(narrated_bytes)  # last arg is the output temp
+            return _sp.CompletedProcess(cmd, 0, "", "")
+
+        orig_synth, orig_run = an.synth_scene, an.subprocess.run
+        an.synth_scene = fake_synth
+        an.subprocess.run = fake_ffmpeg
+        try:
+            return an.add_narration(job / "project.json", "bm_george", 1.0)
+        finally:
+            an.synth_scene = orig_synth
+            an.subprocess.run = orig_run
+
+    def test_rerun_preserves_original_silent_master(self):
+        an = load()
+        import json as _json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            job = Path(tmp)
+            (job / "exports").mkdir()
+            (job / "exports" / "final.mp4").write_bytes(b"SILENT_MASTER")
+            (job / "project.json").write_text(
+                _json.dumps({"scenes": [{"id": "s1", "narration": "Hi.", "duration": 5, "start": 0}]}),
+                encoding="utf-8",
+            )
+
+            self._run_once(an, job, b"NARRATED_1")
+            self.assertEqual((job / "exports" / "final-silent.mp4").read_bytes(), b"SILENT_MASTER")
+            self.assertEqual((job / "exports" / "final.mp4").read_bytes(), b"NARRATED_1")
+
+            # Second run: silent master must stay the ORIGINAL, final updates.
+            self._run_once(an, job, b"NARRATED_2")
+            self.assertEqual((job / "exports" / "final-silent.mp4").read_bytes(), b"SILENT_MASTER")
+            self.assertEqual((job / "exports" / "final.mp4").read_bytes(), b"NARRATED_2")
 
 
 if __name__ == "__main__":

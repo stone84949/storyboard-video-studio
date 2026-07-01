@@ -81,7 +81,7 @@ def build_ffmpeg_filter(items: list[dict[str, Any]]) -> str:
     for pos, item in enumerate(items):
         input_index = pos + 1
         label = f"a{input_index}"
-        parts.append(f"[{input_index}]adelay={item['start_ms']}[{label}]")
+        parts.append(f"[{input_index}]adelay={item['start_ms']}:all=1[{label}]")
         labels.append(f"[{label}]")
     # ``apad`` extends the mixed voice track with silence so ``-shortest`` trims
     # it to the video length rather than cutting the video short when the last
@@ -134,6 +134,11 @@ def add_narration(project_path: Path, voice: str, speed: float) -> dict[str, Any
             _write_summary(exports_dir, summary)
             return summary
 
+        silent = exports_dir / "final-silent.mp4"
+        # Narrate from the true silent master when a prior run preserved it, so
+        # re-runs are idempotent and never clobber the original silent render.
+        source_video = silent if silent.exists() else final
+
         project = json.loads(project_path.read_text(encoding="utf-8"))
         items = collect_narration(project)
         if not items:
@@ -166,7 +171,7 @@ def add_narration(project_path: Path, voice: str, speed: float) -> dict[str, Any
 
         filt = build_ffmpeg_filter(voiced)
         narrated_tmp = exports_dir / "final-narrated.tmp.mp4"
-        cmd = build_ffmpeg_command(final, wavs, filt, narrated_tmp)
+        cmd = build_ffmpeg_command(source_video, wavs, filt, narrated_tmp)
         log.write("\n$ " + " ".join(cmd) + "\n")
         try:
             completed = subprocess.run(cmd, cwd=REPO_ROOT, text=True, capture_output=True, timeout=600)
@@ -181,12 +186,11 @@ def add_narration(project_path: Path, voice: str, speed: float) -> dict[str, Any
             _write_summary(exports_dir, summary)
             return summary
 
-        # Success: preserve the silent render, promote the narrated one.
-        silent = exports_dir / "final-silent.mp4"
-        if silent.exists():
-            silent.unlink()
-        final.rename(silent)
-        narrated_tmp.rename(final)
+        # Success: preserve the true silent master (first run only), then promote
+        # the narrated file to final.mp4 (replace() overwrites on a re-run).
+        if not silent.exists():
+            final.rename(silent)
+        narrated_tmp.replace(final)
 
         summary.update(scenes_voiced=len(voiced), output="exports/final.mp4")
         log.write(f"\nOK: narrated {len(voiced)} scene(s); silent kept as final-silent.mp4\n")

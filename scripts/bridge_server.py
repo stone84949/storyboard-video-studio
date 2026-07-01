@@ -151,7 +151,9 @@ def build_render_command(job_dir: str, target: str, engine: str = "hyperframes")
 
 
 def build_narration_command(job_dir: str, voice: str = "bm_george") -> str:
-    return NARRATION_CMD.format(job_dir=job_dir, voice=voice)
+    # voice flows into a shell=True command; allow only safe voice-id characters.
+    safe_voice = voice if re.fullmatch(r"[a-z_]+", str(voice or "")) else "bm_george"
+    return NARRATION_CMD.format(job_dir=job_dir, voice=safe_voice)
 
 
 def build_launch_command(target: str, job_id: str, execute: bool, job_dir: str | None = None, engine: str = "hyperframes") -> str:

@@ -274,6 +274,8 @@ class BridgeWorkflowTests(unittest.TestCase):
     def test_render_command_appends_narration_for_hyperframes(self):
         bridge = load_bridge()
         self.assertIn("add_narration.py", bridge.build_narration_command("bridge-jobs/x"))
+        # a voice with shell metacharacters is rejected back to the safe default
+        self.assertIn("--voice bm_george", bridge.build_narration_command("x", "evil; rm -rf /"))
         with tempfile.TemporaryDirectory() as tmp:
             created = bridge.create_launch_job(
                 {"machine": "BEAST", "engine": "hyperframes", "run_label": "narr",
