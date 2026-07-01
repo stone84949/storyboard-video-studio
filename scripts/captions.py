@@ -64,6 +64,25 @@ def _dialogue(start_ms: int, end_ms: int, text: str) -> str:
     return f"Dialogue: 0,{_ts(start_ms)},{_ts(end_ms)},Cap,,0,0,0,,{text}\n"
 
 
+def karaoke_cues(transcribe_json, scene_start_ms: int = 0, max_words: int = 4) -> list[dict[str, Any]]:
+    if not transcribe_json or not transcribe_json.get("ok"):
+        return []
+    words = transcribe_json.get("words") or []
+    cues: list[dict[str, Any]] = []
+    for i in range(0, len(words), max_words):
+        group = words[i:i + max_words]
+        if not group:
+            continue
+        wlist = [
+            {"word": str(w.get("word", "")).strip(),
+             "t0": int(round(float(w.get("start", 0)) * 1000)) + scene_start_ms,
+             "t1": int(round(float(w.get("end", 0)) * 1000)) + scene_start_ms}
+            for w in group
+        ]
+        cues.append({"start_ms": wlist[0]["t0"], "end_ms": wlist[-1]["t1"], "words": wlist})
+    return cues
+
+
 def build_ass(cues: list[dict[str, Any]], mode: str, width: int, height: int) -> str:
     body = _header(width, height)
     for cue in cues:

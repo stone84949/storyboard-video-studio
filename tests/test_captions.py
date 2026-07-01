@@ -39,3 +39,24 @@ class BuildAssTests(unittest.TestCase):
         self.assertIn("Dialogue:", ass)
         self.assertIn("hello world", ass)
         self.assertNotIn("\\k", ass)
+
+
+class KaraokeCuesTests(unittest.TestCase):
+    def test_groups_words_and_offsets(self):
+        c = load()
+        tj = {"ok": True, "words": [
+            {"word": "In", "start": 0.0, "end": 0.2},
+            {"word": "the", "start": 0.2, "end": 0.4},
+            {"word": "desert", "start": 0.4, "end": 0.9},
+        ]}
+        cues = c.karaoke_cues(tj, scene_start_ms=1000, max_words=2)
+        self.assertEqual(cues[0]["start_ms"], 1000)
+        self.assertEqual(len(cues[0]["words"]), 2)
+        self.assertEqual(cues[0]["words"][0]["word"], "In")
+        self.assertEqual(cues[-1]["words"][-1]["word"], "desert")
+        # end of last cue reflects the last word end (0.9s) + offset
+        self.assertEqual(cues[-1]["end_ms"], 1900)
+
+    def test_empty_transcript_yields_no_cues(self):
+        c = load()
+        self.assertEqual(c.karaoke_cues({"ok": False, "skipped": True}, 0), [])
