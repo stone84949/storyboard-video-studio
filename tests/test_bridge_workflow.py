@@ -263,6 +263,7 @@ class BridgeWorkflowTests(unittest.TestCase):
             payload = project["payload"]
             storyboard = payload.get("storyboard", payload)
             self.assertEqual(storyboard["scenes"][0]["asset"], "https://real.example/site.jpg")
+            self.assertEqual(storyboard["scenes"][1]["asset"], "lab-notes.jpg")
 
     def test_render_action_unknown_job_raises(self):
         bridge = load_bridge()
