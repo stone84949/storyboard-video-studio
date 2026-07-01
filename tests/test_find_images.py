@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BRIDGE_PATH = REPO_ROOT / "scripts" / "bridge_server.py"
@@ -66,6 +68,40 @@ class GenerateImageTests(unittest.TestCase):
             result = self.bridge.generate_one_image({"prompt": "x"}, Path(tmp))
             self.assertFalse(result["ok"])
             self.assertIn("STORYBOARD_BRIDGE_LIVE", result["error"])
+
+
+class SearchStockTests(unittest.TestCase):
+    def setUp(self):
+        self.bridge = load_bridge()
+
+    def test_missing_key_returns_need_key(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("PEXELS_API_KEY", None)
+            out = self.bridge.search_stock("mountains")
+            self.assertFalse(out["ok"])
+            self.assertEqual(out["need_key"], "PEXELS_API_KEY")
+
+    def test_returns_normalized_results(self):
+        fake = json.dumps({"photos": [
+            {"src": {"medium": "m1", "large2x": "l1"}, "url": "u1", "photographer": "Ann"},
+            {"src": {"small": "s2", "large": "l2"}, "url": "u2", "photographer": "Bo"},
+        ]}).encode("utf-8")
+
+        class FakeResp(io.BytesIO):
+            def __enter__(self):
+                return self
+            def __exit__(self, *a):
+                return False
+
+        with mock.patch.dict(os.environ, {"PEXELS_API_KEY": "k"}, clear=False):
+            with mock.patch.object(self.bridge.urllib.request, "urlopen", return_value=FakeResp(fake)):
+                out = self.bridge.search_stock("mountains")
+        self.assertTrue(out["ok"])
+        self.assertEqual(len(out["results"]), 2)
+        self.assertEqual(out["results"][0]["thumb"], "m1")
+        self.assertEqual(out["results"][0]["full"], "l1")
+        self.assertEqual(out["results"][0]["credit"], "Ann")
+        self.assertEqual(out["results"][1]["full"], "l2")
 
 
 if __name__ == "__main__":

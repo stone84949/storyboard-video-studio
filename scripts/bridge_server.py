@@ -476,6 +476,31 @@ def generate_one_image(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_R
     return {"ok": True, "abs": str(dest.resolve()), "url": f"/jobs/{rel}", "provider": provider}
 
 
+def search_stock(query: str, per_page: int = 15) -> dict[str, Any]:
+    key = os.environ.get("PEXELS_API_KEY")
+    if not key:
+        return {"ok": False, "error": "set PEXELS_API_KEY to enable stock search", "need_key": "PEXELS_API_KEY"}
+    if not str(query).strip():
+        return {"ok": False, "error": "query is required"}
+    url = f"https://api.pexels.com/v1/search?query={quote(query)}&per_page={int(per_page)}"
+    req = urllib.request.Request(url, headers={"Authorization": key, "User-Agent": "storyboard-video-studio/0.1"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        return {"ok": False, "error": f"stock search failed: {exc}"}
+    results = []
+    for photo in data.get("photos", []):
+        src = photo.get("src", {}) if isinstance(photo, dict) else {}
+        results.append({
+            "thumb": src.get("medium") or src.get("small") or src.get("original") or "",
+            "full": src.get("large2x") or src.get("large") or src.get("original") or "",
+            "source_url": photo.get("url", "") if isinstance(photo, dict) else "",
+            "credit": photo.get("photographer", "") if isinstance(photo, dict) else "",
+        })
+    return {"ok": True, "results": results}
+
+
 class BridgeHandler(BaseHTTPRequestHandler):
     jobs_root = DEFAULT_JOBS_ROOT
 
@@ -526,6 +551,13 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 self._send_json(200, read_job(job_id, self.jobs_root))
             except Exception as exc:
                 self._send_json(404, {"ok": False, "error": str(exc)})
+            return
+        if self.path.startswith("/api/search-stock"):
+            from urllib.parse import urlparse, parse_qs
+            qs = parse_qs(urlparse(self.path).query)
+            query = (qs.get("q") or [""])[0]
+            per_page = int((qs.get("per_page") or ["15"])[0] or "15")
+            self._send_json(200, search_stock(query, per_page))
             return
         if self.path in {"/api/health", "/api/status"}:
             jobs = []
