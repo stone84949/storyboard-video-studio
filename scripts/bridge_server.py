@@ -256,7 +256,7 @@ def create_launch_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_RO
         "pipeline_target": target,
         "command": command,
         "execution": execution,
-        "scenes": materialized if action == "materialize" else [],
+        "scenes": materialized,
     }
 
 
@@ -353,10 +353,12 @@ def read_job(job_id: str, jobs_root: Path) -> dict[str, Any]:
     for index, scene in enumerate(storyboard.get("scenes") or [], start=1):
         sid = str(scene.get("id") or scene.get("scene_id") or f"scene-{index:03d}")
         entry = asset_by_id.get(sid, {})
+        rel_asset = entry.get("asset") or ""
         scenes_out.append({
             "scene_id": sid,
             "title": scene.get("title") or scene.get("shot_name") or f"Scene {index}",
-            "image_url": job_image_url(job_id, entry.get("asset") or ""),
+            "image_url": job_image_url(job_id, rel_asset),
+            "abs": str((job_dir / rel_asset)) if rel_asset else "",
             "status": entry.get("status") or "pending",
             "notes": entry.get("notes") or "",
         })

@@ -155,6 +155,7 @@ const state={
         const out=await res.json();
         q('responseBox').value=JSON.stringify(out,null,2);
         if(!out.ok){throw new Error(out.error||'generate failed');}
+        if(out.status!=='executed'){ q('responseBox').value='Dry-run: no images generated. Start the bridge with STORYBOARD_BRIDGE_LIVE=1 to generate images.\n\n'+JSON.stringify(out,null,2); addEvent('Generate skipped: bridge in dry-run mode.'); return; }
         state.currentJobId=out.job_id;
         if(Array.isArray(out.scenes)&&out.scenes.length){ state.scenes=ReviewGate.applyMaterializeResult(state.scenes,out,base); }
         state.project.workflow_stage='approve';

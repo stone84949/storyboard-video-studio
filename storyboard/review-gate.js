@@ -25,7 +25,7 @@
       var copy = Object.assign({}, s);
       if (r.image_url) {
         copy.previewUrl = base + r.image_url;
-        copy.assetUrl = base + r.image_url;
+        copy.assetUrl = r.abs ? r.abs : (base + r.image_url);
       }
       copy.reviewState = 'needs-review';
       copy.materializeStatus = r.status || '';
