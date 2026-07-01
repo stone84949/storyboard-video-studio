@@ -150,6 +150,42 @@ class BridgeWorkflowTests(unittest.TestCase):
             self.assertIsNone(bridge.resolve_served_job_asset("/jobs/../secret.txt", root))
             self.assertIsNone(bridge.resolve_served_job_asset("/jobs/job-1/missing.png", root))
 
+    def test_read_job_returns_scene_image_urls(self):
+        bridge = load_bridge()
+        with tempfile.TemporaryDirectory() as tmp:
+            request = {
+                "machine": "BEAST",
+                "engine": "hyperframes",
+                "run_label": "read job test",
+                "execute": False,
+                "payload": self.realistic_payload(),
+            }
+            result = bridge.create_launch_job(request, Path(tmp))
+            job_id = result["job_id"]
+            job_dir = Path(result["job_dir"])
+            (job_dir / "exports").mkdir(exist_ok=True)
+            (job_dir / "exports" / "asset-manifest.json").write_text(
+                json.dumps({"assets": [
+                    {"scene_id": "scene-001", "status": "generated",
+                     "asset": "assets/images/materialized/001-scene-001.png", "notes": ""},
+                    {"scene_id": "scene-002", "status": "downloaded",
+                     "asset": "assets/images/materialized/002-scene-002.jpg", "notes": ""},
+                ]}), encoding="utf-8")
+
+            out = bridge.read_job(job_id, Path(tmp))
+            self.assertEqual(len(out["scenes"]), 2)
+            self.assertEqual(
+                out["scenes"][0]["image_url"],
+                f"/jobs/{job_id}/assets/images/materialized/001-scene-001.png",
+            )
+            self.assertEqual(out["scenes"][0]["status"], "generated")
+
+    def test_read_job_unknown_id_raises(self):
+        bridge = load_bridge()
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError):
+                bridge.read_job("does-not-exist", Path(tmp))
+
 
 if __name__ == "__main__":
     unittest.main()

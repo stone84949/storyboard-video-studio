@@ -320,6 +320,42 @@ def resolve_served_job_asset(path: str, jobs_root: Path) -> Path | None:
     return target
 
 
+def job_image_url(job_id: str, rel_asset: str) -> str:
+    rel = str(rel_asset or "").replace("\\", "/").lstrip("/")
+    return f"/jobs/{job_id}/{rel}" if rel else ""
+
+
+def read_job(job_id: str, jobs_root: Path) -> dict[str, Any]:
+    job_dir = (jobs_root / job_id).resolve()
+    root = str(jobs_root.resolve())
+    if not job_id or not str(job_dir).startswith(root) or not job_dir.is_dir():
+        raise ValueError(f"unknown job: {job_id!r}")
+    project = json.loads((job_dir / "project.json").read_text(encoding="utf-8"))
+    manifest_path = job_dir / "exports" / "asset-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {"assets": []}
+    asset_by_id = {str(a.get("scene_id")): a for a in manifest.get("assets", [])}
+
+    payload = project.get("payload") if isinstance(project.get("payload"), dict) else project
+    storyboard = payload.get("storyboard") if isinstance(payload.get("storyboard"), dict) else payload
+    scenes_out: list[dict[str, Any]] = []
+    for index, scene in enumerate(storyboard.get("scenes") or [], start=1):
+        sid = str(scene.get("id") or scene.get("scene_id") or f"scene-{index:03d}")
+        entry = asset_by_id.get(sid, {})
+        scenes_out.append({
+            "scene_id": sid,
+            "title": scene.get("title") or scene.get("shot_name") or f"Scene {index}",
+            "image_url": job_image_url(job_id, entry.get("asset") or ""),
+            "status": entry.get("status") or "pending",
+            "notes": entry.get("notes") or "",
+        })
+    return {
+        "ok": True,
+        "job_id": job_id,
+        "pipeline_target": project.get("pipeline_target"),
+        "scenes": scenes_out,
+    }
+
+
 class BridgeHandler(BaseHTTPRequestHandler):
     jobs_root = DEFAULT_JOBS_ROOT
 
@@ -362,6 +398,14 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 self._send_json(404, {"ok": False, "error": "job asset not found"})
                 return
             self._send_file(target)
+            return
+        if self.path.startswith("/api/job"):
+            from urllib.parse import urlparse, parse_qs
+            job_id = (parse_qs(urlparse(self.path).query).get("id") or [""])[0]
+            try:
+                self._send_json(200, read_job(job_id, self.jobs_root))
+            except Exception as exc:
+                self._send_json(404, {"ok": False, "error": str(exc)})
             return
         if self.path in {"/api/health", "/api/status"}:
             jobs = []
