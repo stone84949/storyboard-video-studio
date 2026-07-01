@@ -109,6 +109,20 @@ class BridgeWorkflowTests(unittest.TestCase):
             self.assertEqual(scene_one["motion"], "zoom-in")
             self.assertTrue((job_dir / "storyboard" / "source-payload.json").exists())
 
+    def test_materialize_and_render_commands_split(self):
+        bridge = load_bridge()
+        mat = bridge.build_materialize_command("bridge-jobs/example")
+        self.assertIn("materialize_assets.py", mat)
+        self.assertIn("bridge-jobs/example", mat)
+        self.assertNotIn("render_hyperframes_job.py", mat)
+
+        render = bridge.build_render_command("bridge-jobs/example", "short-shorts", "hyperframes")
+        self.assertIn("render_hyperframes_job.py", render)
+        self.assertNotIn("materialize_assets.py", render)
+
+        montage = bridge.build_render_command("bridge-jobs/example", "montage", "openmontage")
+        self.assertIn("prepare_montage_handoff.py", montage)
+
     def test_pipeline_command_contracts_are_documented(self):
         bridge = load_bridge()
         for target in ["short-shorts", "longer-shorts", "montage"]:
