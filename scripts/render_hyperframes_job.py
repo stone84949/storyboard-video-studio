@@ -19,7 +19,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-VALID_TARGETS = {"short-shorts", "longer-shorts"}
+VALID_TARGETS = {"short-shorts", "longer-shorts", "long-shorts"}
 
 
 def slugify(value: str, fallback: str = "scene") -> str:
@@ -46,11 +46,18 @@ def normalize_payload(project: dict[str, Any]) -> dict[str, Any]:
     storyboard = payload.get("storyboard") if isinstance(payload.get("storyboard"), dict) else {}
     raw_scenes = storyboard.get("scenes") if storyboard else payload.get("scenes")
     scenes = [normalize_scene(scene, i) for i, scene in enumerate(raw_scenes or [], start=1)]
+    viewer_overlays = project.get("viewer_overlays")
+    if viewer_overlays is None:
+        viewer_overlays = storyboard.get("viewer_overlays") if isinstance(storyboard, dict) else None
+    if viewer_overlays is None:
+        viewer_overlays = payload.get("viewer_overlays") if isinstance(payload, dict) else None
+    viewer_overlays = bool(viewer_overlays) if viewer_overlays is not None else False
     return {
         "title": storyboard.get("title") or payload.get("project_title") or project.get("project_title") or "Storyboard Render",
         "aspect_ratio": storyboard.get("aspect_ratio") or payload.get("aspect_ratio") or project.get("aspect_ratio") or "9:16",
         "pipeline_target": project.get("pipeline_target") or storyboard.get("pipeline_target") or payload.get("pipeline_target") or "short-shorts",
         "scenes": scenes,
+        "viewer_overlays": viewer_overlays,
     }
 
 
@@ -118,6 +125,7 @@ def stage_asset(asset: str, scene: dict[str, Any], index: int, workspace: Path, 
 def generate_index_html(payload: dict[str, Any], workspace: Path, job_dir: Path) -> None:
     width, height = resolve_dimensions(payload["aspect_ratio"])
     scenes = payload["scenes"]
+    viewer_overlays = bool(payload.get("viewer_overlays"))
     if not scenes:
         raise ValueError("No scenes found in project payload")
 
@@ -134,26 +142,36 @@ def generate_index_html(payload: dict[str, Any], workspace: Path, job_dir: Path)
         title = html.escape(scene["title"])
         narration = html.escape(scene["narration"])
         motion = html.escape(scene["motion"])
-        clips.append(
-            f"""
-      <section id="{clip_id}" class="clip scene" data-start="{current:.3f}" data-duration="{duration:.3f}" data-track-index="1">
-        <img class="scene-image" src="{html.escape(src, quote=True)}" crossorigin="anonymous" alt="">
-        <div class="vignette"></div>
+        scene_copy = ""
+        if viewer_overlays:
+            scene_copy = f"""
         <div class="scene-copy">
           <div class="kicker">Scene {index:02d} · {motion}</div>
           <h1>{title}</h1>
           <p>{narration}</p>
-        </div>
+        </div>"""
+        clips.append(
+            f"""
+      <section id="{clip_id}" class="clip scene" data-start="{current:.1f}" data-duration="{duration:.1f}" data-track-index="1">
+        <img class="scene-image" src="{html.escape(src, quote=True)}" crossorigin="anonymous" alt="">
+        <div class="vignette"></div>
+        {scene_copy}
       </section>"""
         )
-        tweens.append(
+        tween_lines = [
             f"""
-      tl.from("#{clip_id} .scene-image", {{ scale: 1.06, opacity: 0.72, duration: 0.65, ease: "power2.out" }}, {current + 0.1:.3f});
-      tl.from("#{clip_id} .kicker", {{ y: 24, opacity: 0, duration: 0.45, ease: "expo.out" }}, {current + 0.25:.3f});
-      tl.from("#{clip_id} h1", {{ y: 38, opacity: 0, duration: 0.6, ease: "power3.out" }}, {current + 0.38:.3f});
-      tl.from("#{clip_id} p", {{ y: 28, opacity: 0, duration: 0.5, ease: "sine.out" }}, {current + 0.55:.3f});"""
-        )
-        current += duration
+      tl.from("#{clip_id} .scene-image", {{ scale: 1.06, opacity: 0.72, duration: 0.65, ease: "power2.out" }}, {current + 0.1:.1f});
+            """
+        ]
+        if viewer_overlays:
+            tween_lines.append(
+                f"""
+      tl.from("#{clip_id} .kicker", {{ y: 24, opacity: 0, duration: 0.45, ease: "expo.out" }}, {current + 0.25:.1f});
+      tl.from("#{clip_id} h1", {{ y: 38, opacity: 0, duration: 0.6, ease: "power3.out" }}, {current + 0.38:.1f});
+      tl.from("#{clip_id} p", {{ y: 28, opacity: 0, duration: 0.5, ease: "sine.out" }}, {current + 0.55:.1f});"""
+            )
+        tweens.append("".join(tween_lines))
+        current = round(current + duration, 1)
 
     total = max(1.0, current)
     title = html.escape(str(payload["title"]))
@@ -177,7 +195,7 @@ def generate_index_html(payload: dict[str, Any], workspace: Path, job_dir: Path)
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 </head>
 <body>
-  <div data-composition-id="root" data-start="0" data-duration="{total:.3f}" data-width="{width}" data-height="{height}">
+  <div data-composition-id="root" data-start="0" data-duration="{total:.1f}" data-width="{width}" data-height="{height}">
     {''.join(clips)}
     <script>
       window.__timelines = window.__timelines || {{}};
@@ -225,8 +243,8 @@ def render_job(project_path: Path, target: str | None, quality: str, fps: int, s
     log_path = logs_dir / "hyperframes-render.log"
     log_path.write_text("", encoding="utf-8")
 
-    run_step(["npx", "--yes", "hyperframes", "lint"], workspace, log_path, timeout=180)
     if not skip_validate:
+        run_step(["npx", "--yes", "hyperframes", "lint"], workspace, log_path, timeout=180)
         run_step(["npx", "--yes", "hyperframes", "validate", "--no-contrast"], workspace, log_path, timeout=240)
     run_step(
         ["npx", "--yes", "hyperframes", "render", "--output", str(output_path), "--fps", str(fps), "--quality", quality],

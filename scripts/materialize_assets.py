@@ -22,6 +22,11 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OPENMONTAGE_ROOT = Path(os.environ.get("OPENMONTAGE_ROOT", r"C:\Workspace\Repos\OpenMontage"))
+try:
+    from dotenv import load_dotenv
+    load_dotenv(OPENMONTAGE_ROOT / ".env", override=False)
+except Exception:
+    pass
 REMOTE_TIMEOUT_SECONDS = 45
 MAX_DOWNLOAD_BYTES = 18 * 1024 * 1024
 
@@ -150,18 +155,87 @@ def download_remote(asset_url: str, destination: Path) -> tuple[bool, str | None
         return False, str(exc)
 
 
+def _copy_bytes(src: Path, dst: Path, attempts: int = 4) -> None:
+    """Copy via read/write bytes, tolerant of transient Windows file locks."""
+    import time
+
+    last: Exception | None = None
+    for attempt in range(attempts):
+        try:
+            dst.write_bytes(src.read_bytes())
+            return
+        except PermissionError as exc:  # AV/indexer can briefly lock fresh files
+            last = exc
+            time.sleep(0.4 * (attempt + 1))
+    raise last if last else RuntimeError("copy failed")
+
+
 def copy_local(asset: str, project_path: Path, destination: Path) -> tuple[bool, str | None]:
     raw = Path(asset)
     candidates = [raw, project_path.parent / asset, project_path.parent / "assets" / "images" / asset]
     for candidate in candidates:
         if candidate.exists() and candidate.is_file():
-            shutil.copy2(candidate, destination.with_suffix(candidate.suffix or destination.suffix))
+            try:
+                _copy_bytes(candidate, destination.with_suffix(candidate.suffix or destination.suffix))
+            except Exception as exc:
+                return False, str(exc)
             return True, None
     return False, "local file not found"
 
 
+OPENDESIGN_URL = os.environ.get("OPENDESIGN_URL", "http://127.0.0.1:58991")
+OPENDESIGN_GENERATE_PATH = os.environ.get("OPENDESIGN_GENERATE_PATH", "/api/images/generate")
+
+
+def run_opendesign_provider(prompt: str, output_path: Path, aspect_ratio: str) -> tuple[bool, str | None]:
+    """Generate a scene still via the OpenDesign daemon REST surface.
+
+    OpenDesign binds a dynamic port and exposes generation through MCP skills, so
+    the REST base URL and generate path are configurable via OPENDESIGN_URL and
+    OPENDESIGN_GENERATE_PATH. Returns (ok, error) and never raises so the caller
+    can fall back to local scene art.
+    """
+    base = OPENDESIGN_URL.rstrip("/")
+    try:
+        health = urllib.request.Request(f"{base}/api/health", headers={"User-Agent": "storyboard-video-studio/0.1"})
+        with urllib.request.urlopen(health, timeout=5) as resp:
+            if resp.status >= 400:
+                return False, f"OpenDesign health returned {resp.status}"
+    except Exception as exc:
+        return False, f"OpenDesign daemon not reachable at {base} (set OPENDESIGN_URL): {exc}"
+
+    payload = json.dumps({"prompt": prompt, "aspect_ratio": aspect_ratio, "format": "png"}).encode("utf-8")
+    try:
+        request = urllib.request.Request(
+            f"{base}{OPENDESIGN_GENERATE_PATH}",
+            data=payload,
+            headers={"Content-Type": "application/json", "User-Agent": "storyboard-video-studio/0.1"},
+        )
+        with urllib.request.urlopen(request, timeout=180) as resp:
+            content_type = resp.headers.get("Content-Type", "")
+            body = resp.read(MAX_DOWNLOAD_BYTES + 1)
+        if content_type.startswith("image/"):
+            output_path.write_bytes(body)
+            return True, None
+        data = json.loads(body.decode("utf-8"))
+        b64 = data.get("image_base64") or data.get("b64") or data.get("data")
+        if isinstance(b64, str) and b64:
+            if b64.startswith("data:"):
+                b64 = b64.partition(",")[2]
+            output_path.write_bytes(base64.b64decode(b64))
+            return True, None
+        url = data.get("url") or data.get("image_url")
+        if isinstance(url, str) and url:
+            ok, err = download_remote(url, output_path)
+            return ok, err
+        return False, f"OpenDesign response had no image (keys: {list(data)[:6]})"
+    except Exception as exc:
+        return False, f"OpenDesign generate failed at {base}{OPENDESIGN_GENERATE_PATH}: {exc}"
+
+
 def run_openmontage_provider(provider: str, prompt: str, output_path: Path, aspect_ratio: str) -> tuple[bool, str | None]:
     provider_map = {
+        "flux": ("tools.graphics.flux_image", "FluxImage", {"width": 1024, "height": 1536, "model": "flux-pro/v1.1"}),
         "openai": ("tools.graphics.openai_image", "OpenAIImage", {"size": "1024x1536", "quality": "low"}),
         "google_imagen": ("tools.graphics.google_imagen", "GoogleImagen", {"aspect_ratio": aspect_ratio}),
         "grok": ("tools.graphics.grok_image", "GrokImage", {"aspect_ratio": aspect_ratio, "resolution": "1k"}),
@@ -186,7 +260,11 @@ sys.exit(0 if result.success else 2)
 """
     import subprocess
 
-    completed = subprocess.run([sys.executable, "-c", script], text=True, capture_output=True, timeout=240)
+    openmontage_python = OPENMONTAGE_ROOT / ".venv" / "Scripts" / "python.exe"
+    python_cmd = str(openmontage_python if openmontage_python.exists() else Path(sys.executable))
+    child_env = os.environ.copy()
+    child_env.pop("PYTHONPATH", None)
+    completed = subprocess.run([python_cmd, "-c", script], text=True, capture_output=True, timeout=240, env=child_env)
     if completed.returncode == 0 and output_path.exists():
         return True, None
     detail = completed.stdout.strip() or completed.stderr.strip() or f"provider exited {completed.returncode}"
@@ -196,6 +274,8 @@ sys.exit(0 if result.success else 2)
 def choose_provider(preferred: str) -> str:
     if preferred != "auto":
         return preferred
+    if os.environ.get("FAL_KEY") or os.environ.get("FAL_AI_API_KEY"):
+        return "flux"
     if os.environ.get("XAI_API_KEY"):
         return "grok"
     if os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY"):
@@ -258,7 +338,18 @@ def materialize(project_path: Path, provider: str, style: str, fallback: bool) -
                 continue
             item["notes"] = f"copy failed: {err}"
 
-        if selected_provider in {"openai", "google_imagen", "grok"}:
+        if selected_provider == "opendesign":
+            destination = asset_dir / f"{stem}.png"
+            ok, err = run_opendesign_provider(prompt, destination, "9:16")
+            if ok:
+                item.update({"status": "generated", "asset": str(destination.relative_to(job_dir))})
+                manifest_items.append(item)
+                continue
+            item["notes"] = f"opendesign failed: {err}"
+            if not fallback:
+                raise RuntimeError(item["notes"])
+
+        if selected_provider in {"flux", "openai", "google_imagen", "grok"}:
             destination = asset_dir / f"{stem}.png"
             ok, err = run_openmontage_provider(selected_provider, prompt, destination, "9:16")
             if ok:
@@ -301,7 +392,7 @@ def materialize(project_path: Path, provider: str, style: str, fallback: bool) -
 def main() -> int:
     parser = argparse.ArgumentParser(description="Materialize storyboard assets before render")
     parser.add_argument("project_json", type=Path)
-    parser.add_argument("--provider", choices=["auto", "local", "openai", "google_imagen", "grok"], default="auto")
+    parser.add_argument("--provider", choices=["auto", "local", "opendesign", "openai", "google_imagen", "grok"], default="auto")
     parser.add_argument("--style", default="cinematic weird forgotten history, rich archival mood")
     parser.add_argument("--no-fallback", action="store_true", help="Fail instead of writing local generated scene art when provider/download fails")
     args = parser.parse_args()
