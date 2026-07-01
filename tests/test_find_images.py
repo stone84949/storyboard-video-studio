@@ -104,5 +104,40 @@ class SearchStockTests(unittest.TestCase):
         self.assertEqual(out["results"][1]["full"], "l2")
 
 
+class SearchWebTests(unittest.TestCase):
+    def setUp(self):
+        self.bridge = load_bridge()
+
+    def test_missing_keys_returns_need_key(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("GOOGLE_CSE_KEY", None)
+            os.environ.pop("GOOGLE_CSE_ID", None)
+            out = self.bridge.search_web("kaharumi site")
+            self.assertFalse(out["ok"])
+            self.assertIn("GOOGLE_CSE_KEY", out["need_key"])
+
+    def test_returns_normalized_results(self):
+        fake = json.dumps({"items": [
+            {"link": "https://ex.com/a.jpg", "displayLink": "ex.com",
+             "image": {"thumbnailLink": "https://ex.com/a_t.jpg", "contextLink": "https://ex.com/page"}},
+        ]}).encode("utf-8")
+
+        class FakeResp(io.BytesIO):
+            def __enter__(self):
+                return self
+            def __exit__(self, *a):
+                return False
+
+        with mock.patch.dict(os.environ, {"GOOGLE_CSE_KEY": "k", "GOOGLE_CSE_ID": "cx"}, clear=False):
+            with mock.patch.object(self.bridge.urllib.request, "urlopen", return_value=FakeResp(fake)):
+                out = self.bridge.search_web("kaharumi site")
+        self.assertTrue(out["ok"])
+        self.assertEqual(len(out["results"]), 1)
+        self.assertEqual(out["results"][0]["thumb"], "https://ex.com/a_t.jpg")
+        self.assertEqual(out["results"][0]["full"], "https://ex.com/a.jpg")
+        self.assertEqual(out["results"][0]["source_url"], "https://ex.com/page")
+        self.assertEqual(out["results"][0]["credit"], "ex.com")
+
+
 if __name__ == "__main__":
     unittest.main()

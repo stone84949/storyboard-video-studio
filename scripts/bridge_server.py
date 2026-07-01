@@ -501,6 +501,37 @@ def search_stock(query: str, per_page: int = 15) -> dict[str, Any]:
     return {"ok": True, "results": results}
 
 
+def search_web(query: str, num: int = 10) -> dict[str, Any]:
+    key = os.environ.get("GOOGLE_CSE_KEY")
+    cse = os.environ.get("GOOGLE_CSE_ID")
+    if not key or not cse:
+        return {"ok": False, "error": "set GOOGLE_CSE_KEY and GOOGLE_CSE_ID to enable web image search", "need_key": "GOOGLE_CSE_KEY,GOOGLE_CSE_ID"}
+    if not str(query).strip():
+        return {"ok": False, "error": "query is required"}
+    url = (
+        "https://www.googleapis.com/customsearch/v1"
+        f"?key={quote(key)}&cx={quote(cse)}&searchType=image&num={int(num)}&q={quote(query)}"
+    )
+    req = urllib.request.Request(url, headers={"User-Agent": "storyboard-video-studio/0.1"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        return {"ok": False, "error": f"web search failed: {exc}"}
+    results = []
+    for item in data.get("items", []):
+        if not isinstance(item, dict):
+            continue
+        image = item.get("image", {}) if isinstance(item.get("image"), dict) else {}
+        results.append({
+            "thumb": image.get("thumbnailLink") or item.get("link", ""),
+            "full": item.get("link", ""),
+            "source_url": image.get("contextLink", ""),
+            "credit": item.get("displayLink", ""),
+        })
+    return {"ok": True, "results": results}
+
+
 class BridgeHandler(BaseHTTPRequestHandler):
     jobs_root = DEFAULT_JOBS_ROOT
 
@@ -558,6 +589,13 @@ class BridgeHandler(BaseHTTPRequestHandler):
             query = (qs.get("q") or [""])[0]
             per_page = int((qs.get("per_page") or ["15"])[0] or "15")
             self._send_json(200, search_stock(query, per_page))
+            return
+        if self.path.startswith("/api/search-web"):
+            from urllib.parse import urlparse, parse_qs
+            qs = parse_qs(urlparse(self.path).query)
+            query = (qs.get("q") or [""])[0]
+            num = int((qs.get("num") or ["10"])[0] or "10")
+            self._send_json(200, search_web(query, num))
             return
         if self.path in {"/api/health", "/api/status"}:
             jobs = []
