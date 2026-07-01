@@ -60,3 +60,19 @@ class KaraokeCuesTests(unittest.TestCase):
     def test_empty_transcript_yields_no_cues(self):
         c = load()
         self.assertEqual(c.karaoke_cues({"ok": False, "skipped": True}, 0), [])
+
+
+class KaraokeAssTests(unittest.TestCase):
+    def test_karaoke_ass_has_kf_and_colour_contrast(self):
+        c = load()
+        cues = [{"start_ms": 0, "end_ms": 800, "words": [
+            {"word": "In", "t0": 0, "t1": 200},
+            {"word": "the", "t0": 200, "t1": 500},
+        ]}]
+        ass = c.build_ass(cues, mode="karaoke", width=1080, height=1920)
+        self.assertIn("\\kf", ass)   # per-word karaoke timing present
+        self.assertIn("\\1c", ass)   # sung colour override (creates the sweep contrast)
+        self.assertIn("\\2c", ass)   # un-sung colour override
+        # regression guard: the old all-white bug set \c per word AND left primary
+        # == secondary; ensure a distinct primary colour override exists.
+        self.assertIn("\\1c" + c._HIGHLIGHT, ass)

@@ -22,6 +22,9 @@ dashboard/*.png
 # generated image scratch (find-images panel)
 bridge-jobs/_library/
 
+# background-music tracks (user-provided, licensing is the owner's)
+music/
+
 # Local environment
 .env
 .venv/

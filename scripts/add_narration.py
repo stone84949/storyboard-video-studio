@@ -136,6 +136,37 @@ def synth_scene(text: str, out_wav: Path, voice: str, speed: float, log) -> bool
     return completed.returncode == 0 and out_wav.exists()
 
 
+_WHISPER_MODEL = None
+
+
+def _whisper_model():
+    global _WHISPER_MODEL
+    if _WHISPER_MODEL is None:
+        from faster_whisper import WhisperModel
+        _WHISPER_MODEL = WhisperModel("tiny.en", device="cpu", compute_type="int8")
+    return _WHISPER_MODEL
+
+
+def transcribe_wav_words(wav: Path, log) -> dict[str, Any]:
+    """Word-level transcript of a narration wav via faster-whisper (local, no cmake).
+
+    Returns ``{"ok": True, "words": [{word, start, end}]}`` (seconds), or
+    ``{"ok": False}`` when faster-whisper is unavailable or transcription fails —
+    the caller then falls back to simple captions.
+    """
+    try:
+        model = _whisper_model()
+        segments, _info = model.transcribe(str(wav), word_timestamps=True)
+        words = []
+        for seg in segments:
+            for w in (seg.words or []):
+                words.append({"word": str(w.word).strip(), "start": float(w.start), "end": float(w.end)})
+        return {"ok": True, "words": words}
+    except Exception as exc:
+        log.write(f"\ntranscribe unavailable/failed ({exc}); will use simple captions\n")
+        return {"ok": False, "reason": str(exc)}
+
+
 def add_narration(project_path: Path, voice: str, speed: float, music: str | None = None, captions: str = "off") -> dict[str, Any]:
     project_path = project_path.resolve()
     job_dir = project_path.parent
@@ -198,12 +229,24 @@ def add_narration(project_path: Path, voice: str, speed: float, music: str | Non
 
         ass_name = ""
         if captions and captions != "off":
-            cues = captions_lib.simple_cues(captions_lib_scenes(project))
+            effective_mode = captions
+            cues: list[dict[str, Any]] = []
+            if captions == "karaoke":
+                for item, wav in zip(voiced, wavs):
+                    tj = transcribe_wav_words(wav, log)
+                    if not tj.get("ok"):
+                        effective_mode = "simple"  # whisper unavailable / failed
+                        log.write("\nkaraoke unavailable; falling back to simple captions\n")
+                        cues = []
+                        break
+                    cues.extend(captions_lib.karaoke_cues(tj, scene_start_ms=item["start_ms"]))
+            if effective_mode == "simple":
+                cues = captions_lib.simple_cues(captions_lib_scenes(project))
             if cues:
                 (exports_dir / "finish.ass").write_text(
-                    captions_lib.build_ass(cues, mode="simple", width=1080, height=1920), encoding="utf-8")
+                    captions_lib.build_ass(cues, mode=effective_mode, width=1080, height=1920), encoding="utf-8")
                 ass_name = "finish.ass"
-                summary["captions"] = "simple"
+                summary["captions"] = effective_mode
 
         cmd = build_ffmpeg_command(source_video, wavs, filt, narrated_tmp, music=track, ass_name=ass_name or None)
         summary["music"] = track.name if track else ""

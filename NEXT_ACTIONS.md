@@ -1,5 +1,7 @@
 # Next Actions
 
+0b. Captions + music (Phase 3b) are live in the finish step. Captions default to karaoke word-highlight (needs `pip install faster-whisper` for word timing; falls back to simple line captions automatically if absent). Music: drop royalty-free tracks into `music/` (gitignored); they're looped and ducked under the narration. Captions ON re-encodes the video (slower). CyberPower one-time: `pip install faster-whisper`.
+
 0. Narration audio (Phase 3) is live. Every HyperFrames/Remotion render now auto-adds
    a spoken narration track via `scripts/add_narration.py` (HyperFrames local Kokoro
    TTS + ffmpeg mux). One-time setup on a new machine (e.g. CyberPower):

@@ -87,10 +87,13 @@ def build_ass(cues: list[dict[str, Any]], mode: str, width: int, height: int) ->
     body = _header(width, height)
     for cue in cues:
         if mode == "karaoke" and cue.get("words"):
-            parts = []
+            # Un-sung words render in SecondaryColour (white); each word fills to
+            # PrimaryColour (amber) via \kf as it is spoken — the karaoke sweep.
+            # Setting \1c/\2c inline gives contrast the base style (all-white) lacks.
+            parts = [f"{{\\1c{_HIGHLIGHT}\\2c&H00FFFFFF&}}"]
             for w in cue["words"]:
                 dur_cs = max(1, int((w["t1"] - w["t0"]) / 10))
-                parts.append(f"{{\\kf{dur_cs}\\c{_HIGHLIGHT}}}{w['word']} ")
+                parts.append(f"{{\\kf{dur_cs}}}{w['word']} ")
             body += _dialogue(cue["start_ms"], cue["end_ms"], "".join(parts).strip())
         else:
             body += _dialogue(cue["start_ms"], cue["end_ms"], cue["text"])
