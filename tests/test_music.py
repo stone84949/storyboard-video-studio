@@ -65,3 +65,9 @@ class AudioFilterTests(unittest.TestCase):
         self.assertIn("sidechaincompress", f)
         self.assertIn("[2]", f)  # the music input
         self.assertTrue(f.endswith("[a]"))
+
+    def test_has_music_without_index_degrades_to_no_music(self):
+        m = load()
+        f = m.build_audio_filter([{"start_ms": 0}], has_music=True, music_input_index=None)
+        self.assertTrue(f.endswith("[a]"))
+        self.assertNotIn("sidechaincompress", f)

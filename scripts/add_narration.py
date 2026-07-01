@@ -22,6 +22,11 @@ from pathlib import Path
 from typing import Any
 
 
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+import music as music_lib  # noqa: E402
+
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_VOICE = "bm_george"
 
@@ -93,11 +98,13 @@ def build_ffmpeg_filter(items: list[dict[str, Any]]) -> str:
     return ";".join(parts + [mix])
 
 
-def build_ffmpeg_command(video: Path, wavs: list[Path], filter_complex: str, output: Path) -> list[str]:
+def build_ffmpeg_command(video: Path, wavs: list[Path], filter_complex: str, output: Path, music: Path | None = None) -> list[str]:
     ffmpeg = shutil.which("ffmpeg") or "ffmpeg"
     cmd = [ffmpeg, "-y", "-i", str(video)]
     for wav in wavs:
         cmd += ["-i", str(wav)]
+    if music is not None:
+        cmd += ["-stream_loop", "-1", "-i", str(music)]  # loop the track; -shortest trims
     cmd += [
         "-filter_complex", filter_complex,
         "-map", "0:v", "-map", "[a]",
@@ -116,7 +123,7 @@ def synth_scene(text: str, out_wav: Path, voice: str, speed: float, log) -> bool
     return completed.returncode == 0 and out_wav.exists()
 
 
-def add_narration(project_path: Path, voice: str, speed: float) -> dict[str, Any]:
+def add_narration(project_path: Path, voice: str, speed: float, music: str | None = None) -> dict[str, Any]:
     project_path = project_path.resolve()
     job_dir = project_path.parent
     exports_dir = job_dir / "exports"
@@ -124,7 +131,7 @@ def add_narration(project_path: Path, voice: str, speed: float) -> dict[str, Any
     logs_dir.mkdir(exist_ok=True)
     log_path = logs_dir / "narration.log"
 
-    summary = {"ok": True, "voice": voice, "scenes_voiced": 0, "output": "", "skipped": ""}
+    summary = {"ok": True, "voice": voice, "scenes_voiced": 0, "output": "", "skipped": "", "music": ""}
 
     with log_path.open("a", encoding="utf-8") as log:
         final = exports_dir / "final.mp4"
@@ -169,9 +176,14 @@ def add_narration(project_path: Path, voice: str, speed: float) -> dict[str, Any
             _write_summary(exports_dir, summary)
             return summary
 
-        filt = build_ffmpeg_filter(voiced)
+        root_music = REPO_ROOT / "music"
+        per_video_music = job_dir / "music"
+        track = music_lib.select_track(root_music, per_video_music, explicit=music)
+        music_input_index = len(wavs) + 1 if track else None
+        filt = music_lib.build_audio_filter(voiced, has_music=bool(track), music_input_index=music_input_index)
         narrated_tmp = exports_dir / "final-narrated.tmp.mp4"
-        cmd = build_ffmpeg_command(source_video, wavs, filt, narrated_tmp)
+        cmd = build_ffmpeg_command(source_video, wavs, filt, narrated_tmp, music=track)
+        summary["music"] = track.name if track else ""
         log.write("\n$ " + " ".join(cmd) + "\n")
         try:
             completed = subprocess.run(cmd, cwd=REPO_ROOT, text=True, capture_output=True, timeout=600)
@@ -208,10 +220,11 @@ def main() -> int:
     parser.add_argument("project_json", type=Path)
     parser.add_argument("--voice", default=DEFAULT_VOICE)
     parser.add_argument("--speed", type=float, default=1.0)
+    parser.add_argument("--music", default=None, help="explicit music file, else music/ folders are used")
     args = parser.parse_args()
 
     try:
-        summary = add_narration(args.project_json, args.voice, args.speed)
+        summary = add_narration(args.project_json, args.voice, args.speed, music=args.music)
     except Exception as exc:  # never fail the render chain
         print(f"WARNING: narration step skipped: {exc}", file=sys.stderr)
         return 0

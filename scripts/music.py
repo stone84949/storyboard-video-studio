@@ -50,7 +50,7 @@ def build_narration_mix(items: list[dict[str, Any]]) -> list[str]:
 
 def build_audio_filter(items, has_music=False, music_input_index=None, music_volume=0.5) -> str:
     parts = build_narration_mix(items)
-    if not has_music:
+    if not has_music or music_input_index is None:
         parts[-1] = parts[-1][:-len("[narr]")] + "[a]"
         return ";".join(parts)
     parts.append("[narr]asplit[narrmix][narrkey]")
