@@ -16,11 +16,13 @@ import mimetypes
 import os
 import re
 import subprocess
+import sys
+import urllib.request
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote
+from urllib.parse import unquote, quote
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_JOBS_ROOT = REPO_ROOT / "bridge-jobs"
@@ -436,6 +438,44 @@ def run_render_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT)
     }
 
 
+def _load_materialize():
+    scripts_dir = str(REPO_ROOT / "scripts")
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    import materialize_assets
+    return materialize_assets
+
+
+def generate_one_image(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT) -> dict[str, Any]:
+    prompt = str(request.get("prompt") or "").strip()
+    if not prompt:
+        raise ValueError("prompt is required")
+    if os.environ.get("STORYBOARD_BRIDGE_LIVE") != "1":
+        return {"ok": False, "error": "image generation disabled; start the bridge with STORYBOARD_BRIDGE_LIVE=1"}
+
+    aspect = str(request.get("aspect_ratio") or "9:16")
+    mat = _load_materialize()
+    provider = mat.choose_provider("auto")
+
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    lib_dir = (jobs_root / "_library" / f"{stamp}-{slugify(prompt)[:24]}")
+    lib_dir.mkdir(parents=True, exist_ok=True)
+    dest = lib_dir / "image.png"
+
+    if provider == "opendesign":
+        ok, err = mat.run_opendesign_provider(prompt, dest, aspect)
+    elif provider in {"flux", "openai", "google_imagen", "grok"}:
+        ok, err = mat.run_openmontage_provider(provider, prompt, dest, aspect)
+    else:
+        ok, err = False, "no image provider configured (set FAL_KEY / OPENAI_API_KEY / GOOGLE_API_KEY / XAI_API_KEY)"
+
+    if not ok:
+        return {"ok": False, "error": f"generate failed ({provider}): {err}"}
+
+    rel = dest.resolve().relative_to(jobs_root.resolve()).as_posix()
+    return {"ok": True, "abs": str(dest.resolve()), "url": f"/jobs/{rel}", "provider": provider}
+
+
 class BridgeHandler(BaseHTTPRequestHandler):
     jobs_root = DEFAULT_JOBS_ROOT
 
@@ -498,7 +538,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"ok": False, "error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
-        if self.path not in {"/api/launch", "/api/asset-upload"}:
+        if self.path not in {"/api/launch", "/api/asset-upload", "/api/generate-image"}:
             self._send_json(404, {"ok": False, "error": "not found"})
             return
         try:
@@ -506,6 +546,11 @@ class BridgeHandler(BaseHTTPRequestHandler):
             request = json.loads(self.rfile.read(length).decode("utf-8"))
             if self.path == "/api/asset-upload":
                 result = create_asset_upload(request)
+            elif self.path == "/api/generate-image":
+                result = generate_one_image(request, self.jobs_root)
+                if not result.get("ok"):
+                    self._send_json(400, result)
+                    return
             elif request.get("action") == "materialize":
                 result = create_launch_job(request, self.jobs_root, action="materialize")
             elif request.get("action") == "render":
