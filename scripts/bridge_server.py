@@ -37,6 +37,7 @@ MATERIALIZE_CMD = "python scripts/materialize_assets.py {job_dir}/project.json -
 RENDER_HYPERFRAMES_CMD = "python scripts/render_hyperframes_job.py {job_dir}/project.json --target {target} --quality draft"
 RENDER_REMOTION_CMD = "python scripts/render_remotion_job.py {job_dir}/project.json --target {target} --quality draft"
 MONTAGE_CMD = "python scripts/prepare_montage_handoff.py {job_dir}/project.json"
+NARRATION_CMD = "python scripts/add_narration.py {job_dir}/project.json --voice {voice}"
 
 
 def utc_now() -> str:
@@ -147,6 +148,10 @@ def build_render_command(job_dir: str, target: str, engine: str = "hyperframes")
         return RENDER_REMOTION_CMD.format(job_dir=job_dir, target=render_target)
     render_target = target if target != "montage" else "longer-shorts"
     return RENDER_HYPERFRAMES_CMD.format(job_dir=job_dir, target=render_target)
+
+
+def build_narration_command(job_dir: str, voice: str = "bm_george") -> str:
+    return NARRATION_CMD.format(job_dir=job_dir, voice=voice)
 
 
 def build_launch_command(target: str, job_id: str, execute: bool, job_dir: str | None = None, engine: str = "hyperframes") -> str:
@@ -419,6 +424,11 @@ def run_render_job(request: dict[str, Any], jobs_root: Path = DEFAULT_JOBS_ROOT)
     should_execute = execute_requested and live
 
     command = build_materialize_command(str(job_dir)) + " && " + build_render_command(str(job_dir), target, engine)
+    # For real video renders (HyperFrames/Remotion), append the narration step so
+    # the rendered mp4 comes out with a voice track. add_narration.py exits 0 even
+    # when it skips (no narration / TTS unavailable), so it never fails the render.
+    if engine in {"hyperframes", "remotion"} and target != "montage":
+        command += " && " + build_narration_command(str(job_dir), str(request.get("voice") or "bm_george"))
     (job_dir / "launch-command.txt").write_text(command + "\n", encoding="utf-8")
 
     execution = {"ran": False, "returncode": None, "stdout": "", "stderr": ""}

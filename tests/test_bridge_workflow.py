@@ -271,6 +271,23 @@ class BridgeWorkflowTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 bridge.run_render_job({"job_id": "nope", "payload": {}}, Path(tmp))
 
+    def test_render_command_appends_narration_for_hyperframes(self):
+        bridge = load_bridge()
+        self.assertIn("add_narration.py", bridge.build_narration_command("bridge-jobs/x"))
+        with tempfile.TemporaryDirectory() as tmp:
+            created = bridge.create_launch_job(
+                {"machine": "BEAST", "engine": "hyperframes", "run_label": "narr",
+                 "execute": False, "payload": self.realistic_payload()},
+                Path(tmp),
+            )
+            result = bridge.run_render_job(
+                {"job_id": created["job_id"], "engine": "hyperframes", "execute": False,
+                 "payload": {"storyboard": {"scenes": [{"id": "scene-001", "assetUrl": "x.jpg"}]}}},
+                Path(tmp),
+            )
+            self.assertIn("render_hyperframes_job.py", result["command"])
+            self.assertIn("add_narration.py", result["command"])
+
 
 if __name__ == "__main__":
     unittest.main()
